@@ -1,3 +1,5 @@
+#include "9cc.h"
+
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,47 +21,30 @@
  *
  */
 
-// トークンの型を表す値
-enum {
-    TK_NUM = 256,   // 整数トークン
-    TK_EOF,         // 入力の終わりを表すトークン
-};
-
-// トークンの型
-typedef struct {
-    int ty;         // トークンの型
-    int val;        // tyがTK_NUMの場合、その値
-    char *input;    // トークン文字列(エラーメッセージ用)
-} Token;
-
-enum {
-    ND_NUM = 256,   // 整数のノードの型
-};
-
-typedef struct Node {
-    int ty;             // 演算子がND_NUM
-    struct Node *lhs;   // 左辺
-    struct Node *rhs;   // 右辺
-    int val;            // tyがND_NUMの場合のみ使う
-} Node;
-
-// 関数のプロトタイプ宣言
-Node *new_node(int ty, Node *lhs, Node *rhs);
-Node *new_node_num(int val);
-Node *term();
-Node *mul();
-Node *add();
-void tokenize(char *p);
-void gen(Node *node);
-void error(char *message, char *s);
-
-
 // トークナイズした結果のトークン列はこの配列に保存する
 // 100個以上のトークンはこないものとする
 Token tokens[100];
 
 // 現在読んでいるトークンの場所
 int pos = 0;
+
+// Vectorを作成する
+Vector *new_vector() {
+    Vector *vec = malloc(sizeof(Vector));
+    vec->data = malloc(sizeof(void *) * 16);
+    vec->capacity = 16;
+    return vec;
+}
+
+// vecに新しい要素elemを追加する
+void vec_push(Vector *vec, void *elem) {
+    if (vec->capacity == vec->len) {
+        vec->capacity *= 2;
+        vec->data = realloc(vec->data, sizeof(void *) * vec->capacity);
+    }
+
+    vec->data[vec->len++] = elem;
+}
 
 // Nodeを作成する
 Node *new_node(int ty, Node *lhs, Node *rhs) {
@@ -211,10 +196,43 @@ void error(char *message, char *s) {
     exit(1);
 }
 
+void expect(int line, int expected, int actual) {
+    if (expected == actual) {
+        return;
+    }
+
+    fprintf(stderr, "%d: %d expected, but got %d\n", line, expected, actual);
+    exit(1);
+}
+
+int runtest() {
+    Vector *vec = new_vector();
+    expect(__LINE__, 0, vec->len);
+
+    for (int i = 0; i < 100; i++) {
+        int *val = malloc(sizeof(int));
+        *val = i;
+        vec_push(vec, (void *)val);
+    }
+
+    expect(__LINE__, 100, vec->len);
+    expect(__LINE__, 0  , (int)*((int *)vec->data[0 ]));
+    expect(__LINE__, 50 , (int)*((int *)vec->data[50]));
+    expect(__LINE__, 99 , (int)*((int *)vec->data[99]));
+
+    printf("OK\n");
+}
+
 int main(int argc, char **argv) {
     if (argc != 2) {
         fprintf(stderr, "引数の個数が正しくありません\n");
         return 1;
+    }
+
+    // 引数 -test の時にテストコードを実行
+    if (strcmp("-test", argv[1]) == 0) {
+        runtest();
+        return 0;
     }
 
     // トークナイズする
