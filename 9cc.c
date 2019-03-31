@@ -18,12 +18,10 @@
  *
  * num: digit
  * digit: "0" | "1" | "2" | "3" | "4" | "5 | "6" | "7" | "8" | "9"
- *
  */
 
-// トークナイズした結果のトークン列はこの配列に保存する
-// 100個以上のトークンはこないものとする
-Token tokens[100];
+// トークナイズした結果のトークンを保持するベクター
+Vector *tokens;
 
 // 現在読んでいるトークンの場所
 int pos = 0;
@@ -46,6 +44,34 @@ void vec_push(Vector *vec, void *elem) {
     vec->data[vec->len++] = elem;
 }
 
+// 文字Tokenを作成する
+Token *new_token(int ty, char *input) {
+    Token *token = malloc(sizeof(Token));
+    token->ty = ty;
+    token->input = input;
+    return token;
+}
+
+// 数値Tokenを作成する
+Token *new_token_num(char *input, int val) {
+    Token *token = malloc(sizeof(Token));
+    token->ty = TK_NUM;
+    token->input = input;
+    token->val = val;
+    return token;
+}
+
+// vectorからTokenを取得する, 取得できない時にはNULLを返す
+Token *get_token(int pos) {
+    if (tokens->len == pos) {
+        fprintf(stderr, "error : index out of bounds %d", pos);
+        return NULL;
+    }
+
+    Token *token = (Token *) tokens->data[pos];
+    return token;
+}
+
 // Nodeを作成する
 Node *new_node(int ty, Node *lhs, Node *rhs) {
     Node *node = malloc(sizeof(Node));
@@ -65,7 +91,7 @@ Node *new_node_num(int val) {
 
 // 期待したNodeか確認する. 有効ならposを1つ進める
 int consume(int ty) {
-    if (tokens[pos].ty != ty) {
+    if (get_token(pos)->ty != ty) {
         return 0;
     }
 
@@ -78,17 +104,17 @@ Node *term() {
     if (consume('(')) {
         Node *node = add();
        if (!consume(')')) {
-           error("開き括弧に対応する閉じ括弧がありません: %s", tokens[pos].input);
+           error("開き括弧に対応する閉じ括弧がありません: %s", get_token(pos)->input);
        }
 
        return node;
     }
 
-    if (tokens[pos].ty == TK_NUM) {
-        return new_node_num(tokens[pos++].val);
+    if (get_token(pos)->ty == TK_NUM) {
+        return new_node_num(get_token(pos++)->val);
     }
 
-    error("数値でも開き括弧でもないトークンです: %s", tokens[pos].input);
+    error("数値でも開き括弧でもないトークンです: %s", get_token(pos)->input);
 }
 
 // mul を生成 (掛け算, 割り算)
@@ -123,6 +149,7 @@ Node *add() {
 
 // pが指している文字列をトークンに分割してtokensに保存する
 void tokenize(char *p) {
+    Vector *vec = new_vector();
     int i = 0;
     while (*p) {
         // 空白文字をスキップ
@@ -132,17 +159,18 @@ void tokenize(char *p) {
         }
 
         if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')') {
-            tokens[i].ty = *p;
-            tokens[i].input = p;
+            Token *token = new_token(*p, p);
+            vec_push(vec, token);
+
             i++;
             p++;
             continue;
         }
 
         if (isdigit(*p)) {
-            tokens[i].ty = TK_NUM;
-            tokens[i].input = p;
-            tokens[i].val = strtol(p, &p, 10);
+            Token *token = new_token_num(p, strtol(p, &p, 10));
+            vec_push(vec, token);
+
             i++;
             continue;
         }
@@ -150,9 +178,11 @@ void tokenize(char *p) {
         fprintf(stderr, "トークナイズできません: %s\n", p);
         exit(1);
     }
+    Token *token = new_token(TK_EOF, p);
+    vec_push(vec, token);
 
-    tokens[i].ty = TK_EOF;
-    tokens[i].input = p;
+    // tokensで値を保持する
+    tokens = vec;
 }
 
 // Nodeからスタックマシンを実現する

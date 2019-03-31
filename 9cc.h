@@ -35,6 +35,9 @@ typedef struct Node {
 // 関数のプロトタイプ宣言
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);
+Token *new_token(int ty, char *input);
+Token *new_token_num(char *input, int val);
+Token *get_token(int pos);
 Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 Node *term();
