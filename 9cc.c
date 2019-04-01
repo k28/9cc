@@ -158,8 +158,19 @@ void tokenize(char *p) {
             continue;
         }
 
+        // 演算子, 括弧
         if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')') {
             Token *token = new_token(*p, p);
+            vec_push(vec, token);
+
+            i++;
+            p++;
+            continue;
+        }
+
+        // 変数(識別子)
+        if ('a' <= *p && *p <= 'z') {
+            Token *token = new_token(TK_IDENT, p);
             vec_push(vec, token);
 
             i++;
