@@ -12,6 +12,8 @@ typedef struct {
 enum {
     TK_NUM = 256,   // 整数トークン
     TK_IDENT,       // 識別子
+    TK_ASSIGN,      // 代入 (=)
+    TK_STMT,        // 式の終わり(;)
     TK_EOF,         // 入力の終わりを表すトークン
 };
 
@@ -24,6 +26,8 @@ typedef struct {
 
 enum {
     ND_NUM = 256,   // 整数のノードの型
+    ND_IDENT,       // 識別子
+    ND_ASSIGN,      // =
 };
 
 typedef struct Node {
@@ -31,20 +35,30 @@ typedef struct Node {
     struct Node *lhs;   // 左辺
     struct Node *rhs;   // 右辺
     int val;            // tyがND_NUMの場合のみ使う
+    char *name;          // tyがND_IDENTの場合のみ使う
 } Node;
 
 // 関数のプロトタイプ宣言
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);
+
 Token *new_token(int ty, char *input);
 Token *new_token_num(char *input, int val);
 Token *get_token(int pos);
+
 Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
+
 Node *term();
 Node *mul();
 Node *add();
+Node *assign();
+Node *stmt();
+void program();
+
 void tokenize(char *p);
+
+void gen_lval(Node *node);
 void gen(Node *node);
 void error(char *message, char *s);
 

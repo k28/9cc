@@ -7,21 +7,34 @@
 
 /*
  * 生成規則
+ *
+ * program: stmt program
+ * program: ε
+ *
+ * stmt: assign ";"
+ *
+ * assign: add
+ * assign: add "=" assign
+ *
  * add: mul
  * add: add "+" mul
  * add: add "-" mul
+ *
  * mul: term
  * mul: mul "*" term
  * mul: mul "/" term
- * term: num
- * term: "(" add ")"
  *
- * num: digit
+ * term: num
+ * term: ident
+ * term: "(" assign ")"
+ *
  * digit: "0" | "1" | "2" | "3" | "4" | "5 | "6" | "7" | "8" | "9"
+ * ident: "a" - "z"
  */
 
 // トークナイズした結果のトークンを保持するベクター
 Vector *tokens;
+Node *code[100];
 
 // 現在読んでいるトークンの場所
 int pos = 0;
@@ -102,7 +115,7 @@ int consume(int ty) {
 // termを生成 (括弧)
 Node *term() {
     if (consume('(')) {
-        Node *node = add();
+        Node *node = assign();
        if (!consume(')')) {
            error("開き括弧に対応する閉じ括弧がありません: %s", get_token(pos)->input);
        }
@@ -112,6 +125,12 @@ Node *term() {
 
     if (get_token(pos)->ty == TK_NUM) {
         return new_node_num(get_token(pos++)->val);
+    }
+
+    if (get_token(pos)->ty == TK_IDENT) {
+        Node *node =  new_node(ND_IDENT, NULL, NULL);
+        node->name = get_token(pos++)->input;
+        return node;
     }
 
     error("数値でも開き括弧でもないトークンです: %s", get_token(pos)->input);
@@ -147,6 +166,45 @@ Node *add() {
     }
 }
 
+// assignを生成 (代入)
+Node *assign() {
+    Node *node = add();
+
+    for (;;) {
+        if (consume(TK_ASSIGN)) {
+            node = new_node(ND_ASSIGN, node, assign());
+        } else {
+            return node;
+        }
+    }
+}
+
+Node *stmt() {
+    if (consume(TK_EOF)) {
+        pos++;
+        return NULL;
+    }
+
+    // assignを評価
+    Node *node = assign();
+
+    // 最後はTK_STMT(;)のはず
+    if (!consume(TK_STMT)) {
+        error("式の終わりが不正です. \";\"でありません: %s", get_token(pos)->input);
+    }
+
+    return node;
+}
+
+void program() {
+    int i = 0;
+    while(get_token(pos) != NULL) {
+        code[i++] = stmt();
+    }
+
+    code[i] = NULL;
+}
+
 // pが指している文字列をトークンに分割してtokensに保存する
 void tokenize(char *p) {
     Vector *vec = new_vector();
@@ -178,6 +236,26 @@ void tokenize(char *p) {
             continue;
         }
 
+        // 代入
+        if (*p == '=') {
+            Token *token = new_token(TK_ASSIGN, p);
+            vec_push(vec, token);
+
+            i++;
+            p++;
+            continue;
+        }
+
+        // 式の終わり
+        if (*p == ';') {
+            Token *token = new_token(TK_STMT, p);
+            vec_push(vec, token);
+
+            i++;
+            p++;
+            continue;
+        }
+
         if (isdigit(*p)) {
             Token *token = new_token_num(p, strtol(p, &p, 10));
             vec_push(vec, token);
@@ -196,10 +274,47 @@ void tokenize(char *p) {
     tokens = vec;
 }
 
+// 与えられたノードが変数を表しているときに、その変数のアドレスを計算してスタックにプッシュする
+void gen_lval(Node *node) {
+    if (node->ty != ND_IDENT) {
+        error("代入の左辺値が変数ではありません","");
+    }
+
+    int offset = ('z' - *(node->name) + 1) * 8;
+    printf("  mov rax, rbp\n");
+    printf("  sub rax, %d\n", offset);
+    printf("  push rax\n");
+}
+
 // Nodeからスタックマシンを実現する
+//
+// メモリから値をロード  mov dst, [src]
+// メモリに値をストア    mov [dst], src
 void gen(Node *node) {
     if (node->ty == ND_NUM) {
         printf("  push %d\n", node->val);
+        return;
+    }
+
+    if (node->ty == ND_IDENT) {
+        gen_lval(node);
+        printf("  pop rax\n");
+        printf("  mov rax, [rax]\n");
+        printf("  push rax\n");
+        return;
+    }
+
+    if (node->ty == ND_ASSIGN) {
+        // assignの時には
+        // 左の変数に右の値を入れる
+        // 左の変数をgen_lvalでスタックに入れておいてから
+        // genで右辺を評価して結果を代入する
+        gen_lval(node->lhs);
+        gen(node->rhs);
+        printf("  pop rdi\n");
+        printf("  pop rax\n");
+        printf("  mov [rax], rdi\n");
+        printf("  push rdi\n");
         return;
     }
 
@@ -278,6 +393,9 @@ int main(int argc, char **argv) {
 
     // トークナイズする
     tokenize(argv[1]);
+    program();
+
+    pos = 0;
     Node *node = add();
 
     // アセンブリの前半部分を出力
@@ -285,13 +403,34 @@ int main(int argc, char **argv) {
     printf(".global main\n");
     printf("main:\n");
 
-    // 抽象構文木を下りながらコード生成
-    gen(node);
+    /*
+     * 現在のコンパイラは関数1つのみの想定なので、
+     * プロローグとエピローグが最初と最後に来ている
+     */
 
-    // スタックトップに式全体の値が残っているはずなので
-    // それをRAXにロードして関数からの戻り値とする
-    printf("  pop rax\n");
+    // プロローグ
+    // 変数26個分の領域を確保する
+    printf("  push rbp\n");
+    printf("  mov rbp, rsp\n");
+    printf("  sub rsp, 208\n");
+
+    // 抽象構文木を下りながらコード生成
+    for (int i = 0; code[i]; i++) {
+
+        gen(code[i]);
+
+        // 式の評価結果としてスタックに1つの値が残っているはずなので
+        // スタックが溢れないようにポップしておく
+        printf("  pop rax\n");
+
+    }
+
+    // エピローグ
+    // 最後の式の結果がRAXに残っているのでそれが帰り値になる
+    printf("  mov rsp, rbp\n");
+    printf("  pop rbp\n");
     printf("  ret\n");
+
     return 0;
 }
 
