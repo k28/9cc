@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 /*
  * 生成規則
@@ -55,6 +56,30 @@ void vec_push(Vector *vec, void *elem) {
     }
 
     vec->data[vec->len++] = elem;
+}
+
+// 新しいMapを作成する
+Map *new_map() {
+    Map *map = malloc(sizeof(Map));
+    map->keys = new_vector();
+    map->vals = new_vector();
+    return map;
+}
+
+// Mapに値を追加する
+void map_put(Map *map, char *key, void *val) {
+    vec_push(map->keys, key);
+    vec_push(map->vals, val);
+}
+
+void *map_get(Map *map, char *key) {
+    for (int i =  map->keys->len - 1; i >= 0; i--) {
+        if (strcmp(key, map->keys->data[i]) == 0) {
+            return map->vals->data[i];
+        }
+    }
+
+    return NULL;
 }
 
 // 文字Tokenを作成する
@@ -361,7 +386,7 @@ void expect(int line, int expected, int actual) {
     exit(1);
 }
 
-int runtest() {
+int test_vector() {
     Vector *vec = new_vector();
     expect(__LINE__, 0, vec->len);
 
@@ -376,7 +401,23 @@ int runtest() {
     expect(__LINE__, 50 , (int)*((int *)vec->data[50]));
     expect(__LINE__, 99 , (int)*((int *)vec->data[99]));
 
-    printf("OK\n");
+    printf("test_vector OK\n");
+}
+
+void test_map() {
+    Map *map = new_map();
+    expect(__LINE__, 0, (intptr_t)map_get(map, "foo"));
+    
+    map_put(map, "foo", (void *)2);
+    expect(__LINE__, 2, (intptr_t)map_get(map, "foo"));
+    
+    map_put(map, "bar", (void *)4);
+    expect(__LINE__, 4, (intptr_t)map_get(map, "bar"));
+    
+    map_put(map, "foo", (void *)6);
+    expect(__LINE__, 6, (intptr_t)map_get(map, "foo"));
+
+    printf("test_map OK\n");
 }
 
 int main(int argc, char **argv) {
@@ -387,7 +428,8 @@ int main(int argc, char **argv) {
 
     // 引数 -test の時にテストコードを実行
     if (strcmp("-test", argv[1]) == 0) {
-        runtest();
+        test_vector();
+        test_map();
         return 0;
     }
 

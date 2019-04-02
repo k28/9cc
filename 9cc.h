@@ -8,6 +8,12 @@ typedef struct {
     int len;        // ベクタに追加済みの要素の個数 (len == capacityの時にバッファがfull)
 } Vector;
 
+// 連想配列
+typedef struct {
+    Vector *keys;
+    Vector *vals;
+} Map;
+
 // トークンの型を表す値
 enum {
     TK_NUM = 256,   // 整数トークン
@@ -42,6 +48,10 @@ typedef struct Node {
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);
 
+Map *new_map();
+void map_put(Map *map, char *key, void *val);
+void *map_get(Map *map, char *key);
+
 Token *new_token(int ty, char *input);
 Token *new_token_num(char *input, int val);
 Token *get_token(int pos);
@@ -64,5 +74,6 @@ void error(char *message, char *s);
 
 // テスト用のコード
 void expect(int line, int expected, int actual);
-int runtest();
+int test_vector();
+void test_map();
 
