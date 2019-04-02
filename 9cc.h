@@ -1,5 +1,11 @@
 // 9cc.h
+#include <ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdint.h>
 
+#define MAX_CODE_NUM    (100)
 
 // 可変長ベクタ
 typedef struct {
@@ -44,6 +50,14 @@ typedef struct Node {
     char *name;          // tyがND_IDENTの場合のみ使う
 } Node;
 
+// トークナイズした結果のトークンを保持するベクター
+extern Vector *tokens;
+extern Node   **code;
+
+// 現在読んでいるトークンの場所
+extern int pos;
+
+
 // 関数のプロトタイプ宣言
 Vector *new_vector();
 void vec_push(Vector *vec, void *elem);
@@ -74,6 +88,6 @@ void error(char *message, char *s);
 
 // テスト用のコード
 void expect(int line, int expected, int actual);
-int test_vector();
+void test_vector();
 void test_map();
 

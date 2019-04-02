@@ -1,9 +1,12 @@
-
 CC      = gcc
-CFLAGS  = -ggdb3
+CFLAGS  = -Wall -std=c11 -ggdb3
+SRCS	= $(wildcard *.c)
+OBJS	= $(SRCS:.c=.o)
 
-9cc: 9cc.c
-	$(CC) $(CFLAGS) -o $@ $^
+9cc: $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $(OBJS)
+
+$(OBJS): 9cc.h
 
 test: 9cc
 	./9cc -test
