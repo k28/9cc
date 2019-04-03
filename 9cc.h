@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #define MAX_CODE_NUM    (100)
+#define SIZE_OF_ADDRESS (8)
 
 // 可変長ベクタ
 typedef struct {
@@ -53,6 +54,7 @@ typedef struct Node {
 // トークナイズした結果のトークンを保持するベクター
 extern Vector *tokens;
 extern Node   **code;
+extern Map    *variables;   // 変数の種類を保持するためのMap
 
 // 現在読んでいるトークンの場所
 extern int pos;

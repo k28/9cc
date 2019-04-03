@@ -6,7 +6,9 @@ void gen_lval(Node *node) {
         error("代入の左辺値が変数ではありません","");
     }
 
-    int offset = ('z' - *(node->name) + 1) * 8;
+    // variablesに変数とオフセットが0オリジンで入っている
+    int *stack_offset = map_get(variables, node->name);
+    int offset = (*stack_offset + 1) * SIZE_OF_ADDRESS;
     printf("  mov rax, rbp\n");
     printf("  sub rax, %d\n", offset);
     printf("  push rax\n");

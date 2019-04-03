@@ -3,6 +3,7 @@
 // トークナイズした結果のトークンを保持するベクター
 Vector *tokens;
 Node **code;
+Map *variables;
 
 // 現在読んでいるトークンの場所
 int pos = 0;
@@ -21,6 +22,8 @@ int main(int argc, char **argv) {
     }
 
     code = malloc(sizeof(void *) * MAX_CODE_NUM);
+    // 変数の数を数えるためのMapを作成
+    variables = new_map();
 
     // トークナイズする
     tokenize(argv[1]);
@@ -40,10 +43,11 @@ int main(int argc, char **argv) {
      */
 
     // プロローグ
-    // 変数26個分の領域を確保する
+    // 変数の数分の領域を確保する
+    int size_of_variables = variables->keys->len * SIZE_OF_ADDRESS;
     printf("  push rbp\n");
     printf("  mov rbp, rsp\n");
-    printf("  sub rsp, 208\n");
+    printf("  sub rsp, %d\n", size_of_variables);
 
     // 抽象構文木を下りながらコード生成
     for (int i = 0; code[i] != NULL; i++) {

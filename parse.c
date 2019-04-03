@@ -98,8 +98,20 @@ Node *term() {
     }
 
     if (get_token(pos)->ty == TK_IDENT) {
-        Node *node =  new_node(ND_IDENT, NULL, NULL);
+        Node *node = new_node(ND_IDENT, NULL, NULL);
         node->name = get_token(pos++)->input;
+
+        // 変数の数を数えるためにMapに値を入れる
+        // variablesに登録されていない変数はスタックに積む必要がある
+        // valsに変数のIndexを入れる
+        int *count_of_value = map_get(variables, node->name);
+        if (count_of_value == NULL) {
+            count_of_value = malloc(sizeof(int));
+            // 変数の出現順をIndexにする
+            *count_of_value = variables->keys->len;
+            map_put(variables, node->name, count_of_value);
+        }
+
         return node;
     }
 
@@ -198,12 +210,23 @@ void tokenize(char *p) {
         }
 
         // 変数(識別子)
+        // 複数変数の文字列に対応するため、TK_IDENTに変数名を入れる
+        // 変数名はアルファベット小文字のみとする
+        // TODO 変数名の定義に数字や_-なども使えるようにする
         if ('a' <= *p && *p <= 'z') {
-            Token *token = new_token(TK_IDENT, p);
+            char *pstart = p;
+            int char_len = 0;
+            while ('a' <= *p && *p <= 'z') {
+                p++;
+                char_len++;
+            }
+            char *variableName = malloc(char_len + 1);
+            memset(variableName, 0, char_len + 1);
+            strncpy(variableName, pstart, char_len);
+            Token *token = new_token(TK_IDENT, variableName);
             vec_push(vec, token);
 
             i++;
-            p++;
             continue;
         }
 

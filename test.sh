@@ -27,5 +27,7 @@ try 9  "1 * 2 + (3 + 4);"
 try 42 '42;'
 try 14 'a = 3; b = 5 * 6 - 8; a + b / 2;'
 try 17 'a = 5; z = 12; a + z;'
+try 17 'val = 5; z = 12; val + z;'
+try 7 'val = 4; hoge = 3; foo = val; hoge + foo;'
 
 echo OK
