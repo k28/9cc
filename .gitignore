@@ -3,3 +3,6 @@
 tmp*
 9cc
 
+.tags
+.localvimrc
+
