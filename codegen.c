@@ -1,5 +1,23 @@
 #include "9cc.h"
 
+// 等値の対応
+void gen_equality(Node *node) {
+    //
+    // rdi, raxに比較対象の値が入っている状態でCallされる
+    //
+    printf("  cmp rdi, rax\n");
+    if (       strcmp("==", node->name) == 0) {
+        printf("  sete al\n");
+    } else if (strcmp("!=", node->name) == 0) {
+        printf("  setne al\n");
+    } else {
+        // ここには来ないはず
+        error("不正な等値です.",node->name);
+    }
+    printf("  movzb rax, al\n");
+    // printf("  push rax\n"); -> 呼び出し元で行う
+}
+
 // 与えられたノードが変数を表しているときに、その変数のアドレスを計算してスタックにプッシュする
 void gen_lval(Node *node) {
     if (node->ty != ND_IDENT) {
@@ -53,6 +71,10 @@ void gen(Node *node) {
     printf("  pop rax\n");
 
     switch (node->ty) {
+        case ND_EQUALITY:
+            // 等値の比較を行う
+            gen_equality(node);
+            break;
         case '+':
             printf("  add rax, rdi\n");
             break;

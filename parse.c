@@ -8,8 +8,12 @@
  *
  * stmt: assign ";"
  *
- * assign: add
- * assign: add "=" assign
+ * assign: equality
+ * assign: equality "=" assign
+ *
+ * equality: add
+ * equality: add "==" equality
+ * equality: add "!=" equality
  *
  * add: mul
  * add: add "+" mul
@@ -149,13 +153,28 @@ Node *add() {
     }
 }
 
-// assignを生成 (代入)
-Node *assign() {
+// 等値
+Node *equality() {
     Node *node = add();
 
     for (;;) {
+        if (get_token(pos)->ty == TK_EQUALITY) {
+            char *name = get_token(pos++)->input;
+            node = new_node(ND_EQUALITY, node, add());
+            node->name = name;
+        } else {
+            return node;
+        }
+    }
+}
+
+// assignを生成 (代入)
+Node *assign() {
+    Node *node = equality();
+
+    for (;;) {
         if (consume(TK_ASSIGN)) {
-            node = new_node(ND_ASSIGN, node, assign());
+            node = new_node(ND_ASSIGN, node, equality());
         } else {
             return node;
         }
@@ -227,6 +246,20 @@ void tokenize(char *p) {
             vec_push(vec, token);
 
             i++;
+            continue;
+        }
+
+        // 等値
+        if ((*p == '=' && *(p+1) == '=') ||
+            (*p == '!' && *(p+1) == '=') ) {
+            char *equality_name = malloc(3);
+            memset(equality_name, 0, 3);
+            strncpy(equality_name, p, 2);
+            Token *token = new_token(TK_EQUALITY, equality_name);
+            vec_push(vec, token);
+
+            i++;
+            p+=2;   // 2文字読んだので2進める
             continue;
         }
 

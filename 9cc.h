@@ -25,6 +25,7 @@ typedef struct {
 enum {
     TK_NUM = 256,   // 整数トークン
     TK_IDENT,       // 識別子
+    TK_EQUALITY,    // 等値
     TK_ASSIGN,      // 代入 (=)
     TK_STMT,        // 式の終わり(;)
     TK_EOF,         // 入力の終わりを表すトークン
@@ -41,6 +42,7 @@ enum {
     ND_NUM = 256,   // 整数のノードの型
     ND_IDENT,       // 識別子
     ND_ASSIGN,      // =
+    ND_EQUALITY,    // 等値
 };
 
 typedef struct Node {
@@ -48,7 +50,7 @@ typedef struct Node {
     struct Node *lhs;   // 左辺
     struct Node *rhs;   // 右辺
     int val;            // tyがND_NUMの場合のみ使う
-    char *name;          // tyがND_IDENTの場合のみ使う
+    char *name;         // tyがND_IDENTの場合, 等値の場合に値が入る
 } Node;
 
 // トークナイズした結果のトークンを保持するベクター
@@ -78,12 +80,14 @@ Node *new_node_num(int val);
 Node *term();
 Node *mul();
 Node *add();
+Node *equality();
 Node *assign();
 Node *stmt();
 void program();
 
 void tokenize(char *p);
 
+void gen_equality(Node *node);
 void gen_lval(Node *node);
 void gen(Node *node);
 void error(char *message, char *s);
