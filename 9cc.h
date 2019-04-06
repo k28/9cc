@@ -41,6 +41,7 @@ typedef struct {
 enum {
     ND_NUM = 256,   // 整数のノードの型
     ND_IDENT,       // 識別子
+    ND_FUNCTION,    // 関数呼び出し
     ND_ASSIGN,      // =
     ND_EQUALITY,    // 等値
 };
@@ -76,6 +77,9 @@ Token *get_token(int pos);
 
 Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
+
+int consume_not_add(int index, int ty);
+int consume(int ty);
 
 Node *term();
 Node *mul();

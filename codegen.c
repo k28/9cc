@@ -42,6 +42,12 @@ void gen(Node *node) {
         return;
     }
 
+    if (node->ty == ND_FUNCTION) {
+        // 関数名を指定して実行
+        printf("  call %s\n", node->name);
+        return;
+    }
+
     if (node->ty == ND_IDENT) {
         gen_lval(node);
         printf("  pop rax\n");

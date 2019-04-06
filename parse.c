@@ -26,6 +26,7 @@
  * term: num
  * term: ident
  * term: "(" assign ")"
+ * func: ident "(" ")"
  *
  * digit: "0" | "1" | "2" | "3" | "4" | "5 | "6" | "7" | "8" | "9"
  * ident: "a" - "z"
@@ -76,6 +77,15 @@ Node *new_node_num(int val) {
     return node;
 }
 
+// posのNodeが期待したNodeか確認する
+int consume_not_add(int index, int ty) {
+    Token *token = get_token(index);
+    if (token == NULL)   return 0; 
+    if (token->ty != ty) return 0;
+
+    return 1;
+}
+
 // 期待したNodeか確認する. 有効ならposを1つ進める
 int consume(int ty) {
     if (get_token(pos)->ty != ty) {
@@ -102,21 +112,31 @@ Node *term() {
     }
 
     if (get_token(pos)->ty == TK_IDENT) {
-        Node *node = new_node(ND_IDENT, NULL, NULL);
-        node->name = get_token(pos++)->input;
-
-        // 変数の数を数えるためにMapに値を入れる
-        // variablesに登録されていない変数はスタックに積む必要がある
-        // valsに変数のIndexを入れる
-        int *count_of_value = map_get(variables, node->name);
-        if (count_of_value == NULL) {
-            count_of_value = malloc(sizeof(int));
-            // 変数の出現順をIndexにする
-            *count_of_value = variables->keys->len;
-            map_put(variables, node->name, count_of_value);
+        if (consume_not_add(pos + 1, '(') && consume_not_add(pos + 2, ')')) {
+            // 関数呼び出し
+            Node *node = new_node(ND_FUNCTION, NULL, NULL);
+            node->name = get_token(pos++)->input;
+            // Nodeを関数に変更
+            node->ty = ND_FUNCTION;
+            // 括弧分posを進める
+            pos += 2;
+            return node;
+        } else {
+            // 変数
+            Node *node = new_node(ND_IDENT, NULL, NULL);
+            node->name = get_token(pos++)->input;
+            // 変数の数を数えるためにMapに値を入れる
+            // variablesに登録されていない変数はスタックに積む必要がある
+            // valsに変数のIndexを入れる
+            int *count_of_value = map_get(variables, node->name);
+            if (count_of_value == NULL) {
+                count_of_value = malloc(sizeof(int));
+                // 変数の出現順をIndexにする
+                *count_of_value = variables->keys->len;
+                map_put(variables, node->name, count_of_value);
+            }
+            return node;
         }
-
-        return node;
     }
 
     error("数値でも開き括弧でもないトークンです: %s", get_token(pos)->input);
@@ -228,9 +248,9 @@ void tokenize(char *p) {
             continue;
         }
 
-        // 変数(識別子)
+        // 変数(識別子) もしくは 関数呼び出し
         // 複数変数の文字列に対応するため、TK_IDENTに変数名を入れる
-        // 変数名はアルファベット小文字のみとする
+        // 変数名,関数名はアルファベット小文字のみとする
         // TODO 変数名の定義に数字や_-なども使えるようにする
         if ('a' <= *p && *p <= 'z') {
             char *pstart = p;
