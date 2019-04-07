@@ -27,6 +27,7 @@ enum {
     TK_IDENT,       // 識別子
     TK_EQUALITY,    // 等値
     TK_ASSIGN,      // 代入 (=)
+    TK_COMMA,       // カンマ
     TK_STMT,        // 式の終わり(;)
     TK_EOF,         // 入力の終わりを表すトークン
 };
@@ -42,6 +43,7 @@ enum {
     ND_NUM = 256,   // 整数のノードの型
     ND_IDENT,       // 識別子
     ND_FUNCTION,    // 関数呼び出し
+    ND_ARGUMENT,    // 関数の引数
     ND_ASSIGN,      // =
     ND_EQUALITY,    // 等値
 };
@@ -50,8 +52,8 @@ typedef struct Node {
     int ty;             // 演算子がND_NUM
     struct Node *lhs;   // 左辺
     struct Node *rhs;   // 右辺
-    int val;            // tyがND_NUMの場合のみ使う
-    char *name;         // tyがND_IDENTの場合, 等値の場合に値が入る
+    int val;            // tyがND_NUMの場合その値, tyがND_FUNCTIONの場合引数の数
+    char *name;         // tyがND_IDENT,ND_FUNCTIONの場合, 等値の場合に値が入る
 } Node;
 
 // トークナイズした結果のトークンを保持するベクター
@@ -82,9 +84,11 @@ int consume_not_add(int index, int ty);
 int consume(int ty);
 
 Node *term();
+Node *func();
 Node *mul();
 Node *add();
 Node *equality();
+Node *argument(int *count_of_arguments);
 Node *assign();
 Node *stmt();
 void program();

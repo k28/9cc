@@ -32,19 +32,70 @@ void gen_lval(Node *node) {
     printf("  push rax\n");
 }
 
+// 引数をレジスタにセットする
+void gen_arguments(char *func_name, int arg_count) {
+    if (arg_count > 6) {
+        error("引数が多すぎます %s", func_name);
+    }
+    for (int i = arg_count; i > 0; i--) {
+        switch(i) {
+            case 1:
+                printf("  pop rdi\n");
+                break;
+            case 2:
+                printf("  pop rsi\n");
+                break;
+            case 3:
+                printf("  pop rdx\n");
+                break;
+            case 4:
+                printf("  pop rcx\n");
+                break;
+            case 5:
+                printf("  pop r8\n");
+                break;
+            case 6:
+                printf("  pop r9\n");
+                break;
+            case 7:
+                printf("  pop r10\n");
+                break;
+            case 8:
+                printf("  pop r11\n");
+                break;
+        }
+    }
+}
+
 // Nodeからスタックマシンを実現する
 //
 // メモリから値をロード  mov dst, [src]
 // メモリに値をストア    mov [dst], src
 void gen(Node *node) {
+
     if (node->ty == ND_NUM) {
         printf("  push %d\n", node->val);
         return;
     }
 
     if (node->ty == ND_FUNCTION) {
+        // 引数がある場合は引数を評価
+        if (node->rhs != NULL) {
+            gen(node->rhs);
+        }
+
+        // 引数をレジスタにセット
+        gen_arguments(node->name, node->val);
+
         // 関数名を指定して実行
         printf("  call %s\n", node->name);
+        return;
+    }
+
+    if (node->ty == ND_ARGUMENT) {
+        // 引数を評価
+        gen(node->lhs);
+        gen(node->rhs);
         return;
     }
 

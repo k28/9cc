@@ -19,14 +19,20 @@
  * add: add "+" mul
  * add: add "-" mul
  *
- * mul: term
+ * mul: func
  * mul: mul "*" term
  * mul: mul "/" term
+ *
+ * func: ident "(" argument ")"
+ * func: term
+ *
+ * argument: equality
+ * argument: equality "," equality
+ * argument: ε
  *
  * term: num
  * term: ident
  * term: "(" assign ")"
- * func: ident "(" ")"
  *
  * digit: "0" | "1" | "2" | "3" | "4" | "5 | "6" | "7" | "8" | "9"
  * ident: "a" - "z"
@@ -112,40 +118,53 @@ Node *term() {
     }
 
     if (get_token(pos)->ty == TK_IDENT) {
-        if (consume_not_add(pos + 1, '(') && consume_not_add(pos + 2, ')')) {
-            // 関数呼び出し
-            Node *node = new_node(ND_FUNCTION, NULL, NULL);
-            node->name = get_token(pos++)->input;
-            // Nodeを関数に変更
-            node->ty = ND_FUNCTION;
-            // 括弧分posを進める
-            pos += 2;
-            return node;
-        } else {
-            // 変数
-            Node *node = new_node(ND_IDENT, NULL, NULL);
-            node->name = get_token(pos++)->input;
-            // 変数の数を数えるためにMapに値を入れる
-            // variablesに登録されていない変数はスタックに積む必要がある
-            // valsに変数のIndexを入れる
-            int *count_of_value = map_get(variables, node->name);
-            if (count_of_value == NULL) {
-                count_of_value = malloc(sizeof(int));
-                // 変数の出現順をIndexにする
-                *count_of_value = variables->keys->len;
-                map_put(variables, node->name, count_of_value);
-            }
-            return node;
+        // 名称を取得しておく
+        char *name = get_token(pos++)->input;
+        // 変数
+        Node *node = new_node(ND_IDENT, NULL, NULL);
+        node->name = name;
+        // 変数の数を数えるためにMapに値を入れる
+        // variablesに登録されていない変数はスタックに積む必要がある
+        // valsに変数のIndexを入れる
+        int *count_of_value = map_get(variables, node->name);
+        if (count_of_value == NULL) {
+            count_of_value = malloc(sizeof(int));
+            // 変数の出現順をIndexにする
+            *count_of_value = variables->keys->len;
+            map_put(variables, node->name, count_of_value);
         }
+        return node;
     }
 
     error("数値でも開き括弧でもないトークンです: %s", get_token(pos)->input);
     return NULL;
 }
 
+// funcを生成 (関数呼び出し)
+Node *func() {
+    if (get_token(pos)->ty == TK_IDENT && consume_not_add(pos + 1, '(')) {
+        // 名称を取得
+        char *name = get_token(pos++)->input;
+        pos++;  // 前カッコ "(" 分進める
+        // 引数の数を計測するための変数をpush
+        int count_of_arguments = 0;
+        Node *node = new_node(ND_FUNCTION, NULL, argument(&count_of_arguments));
+        node->name = name;
+        // valに引数の数を入れる
+        node->val = count_of_arguments;
+
+        if (!consume(')')) {
+            error("関数呼び出しに対応する 開き括弧に対応する閉じ括弧がありません: %s", get_token(pos)->input);
+        }
+        return node;
+    }
+
+    return term();
+}
+
 // mul を生成 (掛け算, 割り算)
 Node *mul() {
-    Node *node = term();
+    Node *node = func();
     
     for (;;) {
         if (consume('*')) {
@@ -195,6 +214,24 @@ Node *assign() {
     for (;;) {
         if (consume(TK_ASSIGN)) {
             node = new_node(ND_ASSIGN, node, equality());
+        } else {
+            return node;
+        }
+    }
+}
+
+Node *argument(int *count_of_arguments) {
+    if (consume_not_add(pos, ')')) {
+        // エラーチェックのため 上位で閉じ括弧の有無をチェックする
+        return NULL;
+    }
+
+    *count_of_arguments += 1;
+    Node *node = equality();
+    for (;;) {
+        if (consume(TK_COMMA)) {
+            *count_of_arguments += 1;
+            node = new_node(ND_ARGUMENT, node, equality());
         } else {
             return node;
         }
@@ -286,6 +323,16 @@ void tokenize(char *p) {
         // 代入
         if (*p == '=') {
             Token *token = new_token(TK_ASSIGN, p);
+            vec_push(vec, token);
+
+            i++;
+            p++;
+            continue;
+        }
+
+        // カンマ
+        if (*p == ',') {
+            Token *token = new_token(TK_COMMA, p);
             vec_push(vec, token);
 
             i++;
