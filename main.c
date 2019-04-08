@@ -45,6 +45,8 @@ int main(int argc, char **argv) {
     // プロローグ
     // 変数の数分の領域を確保する
     int size_of_variables = variables->keys->len * SIZE_OF_ADDRESS;
+    int rsp_offset = size_of_variables % 16;
+    size_of_variables += rsp_offset;
     printf("  push rbp\n");
     printf("  mov rbp, rsp\n");
     printf("  sub rsp, %d\n", size_of_variables);

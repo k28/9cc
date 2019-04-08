@@ -89,6 +89,8 @@ void gen(Node *node) {
 
         // 関数名を指定して実行
         printf("  call %s\n", node->name);
+        // 結果をスタックに入れる
+        printf("  push rax\n");
         return;
     }
 
