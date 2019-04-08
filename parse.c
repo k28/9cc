@@ -239,11 +239,6 @@ Node *argument(int *count_of_arguments) {
 }
 
 Node *stmt() {
-    if (consume(TK_EOF)) {
-        pos++;
-        return NULL;
-    }
-
     // assignを評価
     Node *node = assign();
 
@@ -257,7 +252,7 @@ Node *stmt() {
 
 void program() {
     int i = 0;
-    while(get_token(pos) != NULL) {
+    while(get_token(pos)->ty != TK_EOF) {
         code[i++] = stmt();
     }
 
