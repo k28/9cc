@@ -20,8 +20,8 @@
  * add: add "-" mul
  *
  * mul: func
- * mul: mul "*" term
- * mul: mul "/" term
+ * mul: mul "*" func
+ * mul: mul "/" func
  *
  * func: ident "(" argument ")"
  * func: term
@@ -168,9 +168,9 @@ Node *mul() {
     
     for (;;) {
         if (consume('*')) {
-            node = new_node('*', node, term());
+            node = new_node('*', node, func());
         } else if (consume('/')) {
-            node = new_node('/', node, term());
+            node = new_node('/', node, func());
         } else {
             return node;
         }
