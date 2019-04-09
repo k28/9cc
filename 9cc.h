@@ -42,7 +42,7 @@ typedef struct {
 enum {
     ND_NUM = 256,   // 整数のノードの型
     ND_IDENT,       // 識別子
-    ND_FUNCTION,    // 関数呼び出し
+    ND_FUNCCALL,    // 関数呼び出し
     ND_ARGUMENT,    // 関数の引数
     ND_ASSIGN,      // =
     ND_EQUALITY,    // 等値
@@ -52,8 +52,8 @@ typedef struct Node {
     int ty;             // 演算子がND_NUM
     struct Node *lhs;   // 左辺
     struct Node *rhs;   // 右辺
-    int val;            // tyがND_NUMの場合その値, tyがND_FUNCTIONの場合引数の数
-    char *name;         // tyがND_IDENT,ND_FUNCTIONの場合, 等値の場合に値が入る
+    int val;            // tyがND_NUMの場合その値, tyがND_FUNCCALLの場合引数の数
+    char *name;         // tyがND_IDENT,ND_FUNCCALLの場合, 等値の場合に値が入る
 } Node;
 
 // トークナイズした結果のトークンを保持するベクター

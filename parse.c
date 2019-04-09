@@ -148,7 +148,7 @@ Node *func() {
         pos++;  // 前カッコ "(" 分進める
         // 引数の数を計測するための変数をpush
         int count_of_arguments = 0;
-        Node *node = new_node(ND_FUNCTION, NULL, argument(&count_of_arguments));
+        Node *node = new_node(ND_FUNCCALL, NULL, argument(&count_of_arguments));
         node->name = name;
         // valに引数の数を入れる
         node->val = count_of_arguments;

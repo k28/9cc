@@ -78,7 +78,7 @@ void gen(Node *node) {
         return;
     }
 
-    if (node->ty == ND_FUNCTION) {
+    if (node->ty == ND_FUNCCALL) {
         // 引数がある場合は引数を評価
         if (node->rhs != NULL) {
             gen(node->rhs);
