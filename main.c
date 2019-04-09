@@ -44,6 +44,8 @@ int main(int argc, char **argv) {
 
     // プロローグ
     // 変数の数分の領域を確保する
+    // 関数呼び出しをする際にはRSPが16の倍数になっている必要があるとのこと
+    // ココで調整しているけど、正しい?
     int size_of_variables = variables->keys->len * SIZE_OF_ADDRESS;
     int rsp_offset = size_of_variables % 16;
     size_of_variables += rsp_offset;
