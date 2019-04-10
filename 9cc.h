@@ -47,9 +47,7 @@ enum {
     ND_FUNCCALL,    // 関数呼び出し
     ND_ARGUMENT,    // 関数の引数
     ND_ASSIGN,      // =
-    ND_DEF_FUNCTION,// 関数定義
     ND_DEF_ARGUMENT,// 関数の引数定義
-    ND_STATEMENT,   // 式 (xxxx;)
     ND_EQUALITY,    // 等値
 };
 
