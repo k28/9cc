@@ -38,5 +38,6 @@ try 0  'main(){1 != 1;}'
 try 0  'main(){a = 1 == 1 + 2; a;}'
 try 1  'main(){a = 4 == 1 + 2 * 2 - 1 == 1; a;}'
 try 4  'hoge(){a = 3;} main(){a = 4; a;}'
+try 3  'hoge(){a = 3;} main(){a = 4; a; hoge();}'
 
 echo OK
