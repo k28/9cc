@@ -29,6 +29,8 @@ enum {
     TK_ASSIGN,      // 代入 (=)
     TK_COMMA,       // カンマ
     TK_STMT,        // 式の終わり(;)
+    TK_LCBACKET,    // { 開く
+    TK_RCBACKET,    // } 閉じる
     TK_EOF,         // 入力の終わりを表すトークン
 };
 
@@ -45,6 +47,9 @@ enum {
     ND_FUNCCALL,    // 関数呼び出し
     ND_ARGUMENT,    // 関数の引数
     ND_ASSIGN,      // =
+    ND_DEF_FUNCTION,// 関数定義
+    ND_DEF_ARGUMENT,// 関数の引数定義
+    ND_STATEMENT,   // 式 (xxxx;)
     ND_EQUALITY,    // 等値
 };
 
@@ -56,10 +61,17 @@ typedef struct Node {
     char *name;         // tyがND_IDENT,ND_FUNCCALLの場合, 等値の場合に値が入る
 } Node;
 
+typedef struct Function {
+    char    *name;      // 関数名
+    int     arguments;  // 引数の数
+    Vector  *code;      // 関数の先頭コード
+    Map     *variables; // ローカル変数
+} Function;
+
 // トークナイズした結果のトークンを保持するベクター
 extern Vector *tokens;
-extern Node   **code;
-extern Map    *variables;   // 変数の種類を保持するためのMap
+extern Vector *functions;       // 関数を保持するためのベクター
+extern Map    *variables;       // ローカル変数の種類を保持するためのMap
 
 // 現在読んでいるトークンの場所
 extern int pos;
@@ -88,9 +100,12 @@ Node *func();
 Node *mul();
 Node *add();
 Node *equality();
+Vector *func_body();
 Node *argument(int *count_of_arguments);
 Node *assign();
 Node *stmt();
+int def_argument(char *func_name);
+Function *def_function();
 void program();
 
 void tokenize(char *p);
@@ -98,6 +113,7 @@ void tokenize(char *p);
 void gen_equality(Node *node);
 void gen_lval(Node *node);
 void gen(Node *node);
+void gen_function(Function *function);
 void error(char *message, char *s);
 
 // テスト用のコード

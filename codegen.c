@@ -155,3 +155,35 @@ void gen(Node *node) {
     printf("  push rax\n");
 }
 
+void gen_function(Function *function) {
+    // 関数名
+    printf("%s:\n", function->name);
+
+    // TODO 関数呼び出しの引数をコピーする
+
+    // プロローグ
+    // 変数の数分の領域を確保する
+    // 関数呼び出しをする際にはRSPが16の倍数になっている必要があるとのこと
+    // ココで調整しているけど、正しい?
+    int size_of_variables = function->variables->keys->len * SIZE_OF_ADDRESS;
+    int rsp_offset = size_of_variables % 16;
+    size_of_variables += rsp_offset;
+    printf("  push rbp\n");
+    printf("  mov rbp, rsp\n");
+    printf("  sub rsp, %d\n", size_of_variables);
+
+    // コード生成
+    for (int i = 0; i < function->code->len; i++) {
+        gen(function->code->data[i]);
+        // 式の評価結果としてスタックに1つの値が残っているはずなので
+        // スタックが溢れないようにポップしておく
+        printf("  pop rax\n");
+    }
+
+    // エピローグ
+    // 最後の式の結果がRAXに残っているのでそれが帰り値になる
+    printf("  mov rsp, rbp\n");
+    printf("  pop rbp\n");
+    printf("  ret\n");
+}
+

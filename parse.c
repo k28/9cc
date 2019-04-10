@@ -3,8 +3,18 @@
 /*
  * 生成規則
  *
- * program: stmt program
+ * program: def_func
+ * program: def_func def_func
  * program: ε
+ *
+ * def_func: ident "(" def_argument ")" "{" func_body "}"
+ *
+ * def_argument: ident
+ * def_argument: ident "," def_argument
+ * def_argument: ε
+ *
+ * func_body: stmt func_body
+ * func_body: ε
  *
  * stmt: assign ";"
  *
@@ -37,6 +47,9 @@
  * digit: "0" | "1" | "2" | "3" | "4" | "5 | "6" | "7" | "8" | "9"
  * ident: "a" - "z"
  */
+
+// 現在パース中の関数のローカル変数を保持する
+Map *variables;
 
 // 文字Tokenを作成する
 Token *new_token(int ty, char *input) {
@@ -250,13 +263,85 @@ Node *stmt() {
     return node;
 }
 
-void program() {
-    int i = 0;
-    while(get_token(pos)->ty != TK_EOF) {
-        code[i++] = stmt();
+Vector *func_body() {
+    Vector *code = new_vector();
+    while(get_token(pos)->ty != TK_RCBACKET) {
+        Node *node = stmt();
+        if (node) {
+            vec_push(code, node);
+        }
     }
 
-    code[i] = NULL;
+    return code;
+}
+
+// 引数の数を数えて返す
+int def_argument(char *func_name) {
+    if (consume_not_add(pos, ')')) {
+        return 0;
+    }
+    int count_of_arguments = 0;
+    for (;;) {
+        if(consume(TK_IDENT)) {
+            count_of_arguments++;
+        }
+        if (consume(TK_COMMA)) {
+            break;
+        }
+
+        // ここに来たら関数の引数定義としておかしい
+        error("引数定義が不正です。: %s", func_name);
+    }
+
+    return count_of_arguments;
+}
+
+// 関数定義
+Function *def_function() {
+    if (get_token(pos)->ty == TK_IDENT && consume_not_add(pos + 1, '(')) {
+        // 関数名を取得
+        char *name = get_token(pos++)->input;
+        pos++;  // 前カッコ "(" 分進める
+        // 引数の数を計測するための変数をpush
+        int count_of_arguments = def_argument(name);
+        if (!consume(')')) {
+            error("関数の引数定義に対応する 閉じ括弧がありません: %s", name);
+        }
+        if (!consume(TK_LCBACKET)) {
+            error("関数定義に対応する 開きブランケットがありません: %s", name);
+        }
+
+        // グローバル変数に
+        // 現在パース中のローカル変数保持用の領域をセットする
+        Map *local_variables = new_map();
+        variables = local_variables;
+        Vector *body = func_body();
+
+        // TODO 関数に分ける
+        Function *function = (Function *)malloc(sizeof(Function));
+        function->name = name;
+        function->code = body;
+        function->arguments = count_of_arguments;
+        function->variables = local_variables;
+
+        if (!consume(TK_RCBACKET)) {
+            error("関数定義に対応する 閉じブランケットがありません: %s", name);
+        }
+        return function;
+    }
+
+    error("関数定義が不正です :%s\n", get_token(pos)->input);
+    return NULL;
+}
+
+void program() {
+    while(get_token(pos)->ty != TK_EOF) {
+        // code[i++] = stmt();
+        Function *function = def_function();
+        if (function) {
+            vec_push(functions, function);
+        }
+    }
 }
 
 // pが指している文字列をトークンに分割してtokensに保存する
@@ -330,6 +415,23 @@ void tokenize(char *p) {
             Token *token = new_token(TK_COMMA, p);
             vec_push(vec, token);
 
+            i++;
+            p++;
+            continue;
+        }
+
+        // 開きカッコ
+        if (*p == '{') {
+            Token *token = new_token(TK_LCBACKET, p);
+            vec_push(vec, token);
+            i++;
+            p++;
+            continue;
+        }
+        // 閉じカッコ
+        if (*p == '}') {
+            Token *token = new_token(TK_RCBACKET, p);
+            vec_push(vec, token);
             i++;
             p++;
             continue;
