@@ -5,7 +5,7 @@ try() {
     input="$2"
 
     ./9cc "$input" > tmp.s
-    gcc -o tmp tmp.s
+    gcc -o tmp tmp.s test.o
     ./tmp
     actual="$?"
 
@@ -37,6 +37,7 @@ try 1  'main(){1 != 3;}'
 try 0  'main(){1 != 1;}'
 try 0  'main(){a = 1 == 1 + 2; a;}'
 try 1  'main(){a = 4 == 1 + 2 * 2 - 1 == 1; a;}'
+try 10 'main(){bar(3, 7);}'
 try 4  'hoge(){a = 3;} main(){a = 4; a;}'
 try 3  'hoge(){a = 3;} main(){a = 4; a; hoge();}'
 
