@@ -155,11 +155,47 @@ void gen(Node *node) {
     printf("  push rax\n");
 }
 
+// 関数の引数を設定する
+void gen_function_variables(Function *function) {
+    // Functionのargumentsに引数が入っている
+    // 関数の引数はローカル変数と同じ扱いなので、値を設定しておくことで
+    // 以降ローカル変数のように扱える
+    // 変数はrgpからのオフセットでアクセスする
+    for (int i = 0; i < function->arguments->len; i++) {
+        Node *argnode = function->arguments->data[i];
+        int *stach_offset = map_get(function->variables, argnode->name);
+        int offset = (*stach_offset + 1) * SIZE_OF_ADDRESS;
+        printf("  mov rax, rbp\n");
+        printf("  sub rax, %d\n", offset);
+        switch(i + 1) {
+            case 1:
+                printf("  mov [rax], rdi\n");
+                break;
+            case 2:
+                printf("  mov [rax], rsi\n");
+                break;
+            case 3:
+                printf("  mov [rax], rdx\n");
+                break;
+            case 4:
+                printf("  mov [rax], rcx\n");
+                break;
+            case 5:
+                printf("  mov [rax], r8\n");
+                break;
+            case 6:
+                printf("  mov [rax], r9\n");
+                break;
+        }
+    }
+}
+
 void gen_function(Function *function) {
     // 関数名
     printf("%s:\n", function->name);
 
-    // TODO 関数呼び出しの引数をコピーする
+    // ローカル変数のMapをグローバル領域にコピー
+    variables = function->variables;
 
     // プロローグ
     // 変数の数分の領域を確保する
@@ -171,6 +207,9 @@ void gen_function(Function *function) {
     printf("  push rbp\n");
     printf("  mov rbp, rsp\n");
     printf("  sub rsp, %d\n", size_of_variables);
+
+    // 関数の引数に値を設定
+    gen_function_variables(function);
 
     // コード生成
     for (int i = 0; i < function->code->len; i++) {

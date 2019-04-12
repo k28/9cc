@@ -276,16 +276,31 @@ Vector *func_body() {
 }
 
 // 引数の数を数えて返す
-int def_argument(char *func_name) {
-    if (consume_not_add(pos, ')')) {
-        return 0;
-    }
-    int count_of_arguments = 0;
+Vector *def_argument(char *func_name) {
+    Vector *arguments = new_vector();
+
     for (;;) {
-        if(consume(TK_IDENT)) {
-            count_of_arguments++;
+        if(get_token(pos)->ty == TK_IDENT) {
+            // 変数名
+            char *name = get_token(pos++)->input;
+            // 関数定義の変数はローカル変数と同じ扱いにする
+            int *count_of_value = map_get(variables, name);
+            if (count_of_value == NULL) {
+                count_of_value = malloc(sizeof(int));
+                // 変数の出現順をIndexにする
+                *count_of_value = variables->keys->len;
+                map_put(variables, name, count_of_value);
+
+                Node *node = new_node(ND_IDENT, NULL, NULL);
+                node->name = name;
+                vec_push(arguments, node);
+            }
+            continue;
         }
         if (consume(TK_COMMA)) {
+            continue;
+        }
+        if (consume(')')) {
             break;
         }
 
@@ -293,7 +308,7 @@ int def_argument(char *func_name) {
         error("引数定義が不正です。: %s", func_name);
     }
 
-    return count_of_arguments;
+    return arguments;
 }
 
 // 関数定義
@@ -302,26 +317,28 @@ Function *def_function() {
         // 関数名を取得
         char *name = get_token(pos++)->input;
         pos++;  // 前カッコ "(" 分進める
-        // 引数の数を計測するための変数をpush
-        int count_of_arguments = def_argument(name);
-        if (!consume(')')) {
-            error("関数の引数定義に対応する 閉じ括弧がありません: %s", name);
-        }
-        if (!consume(TK_LCBACKET)) {
-            error("関数定義に対応する 開きブランケットがありません: %s", name);
-        }
 
         // グローバル変数に
         // 現在パース中のローカル変数保持用の領域をセットする
         Map *local_variables = new_map();
         variables = local_variables;
+
+        // 引数の数を計測するための変数をpush
+        Vector *arguments = def_argument(name);
+
+        // 引数部分の定義の後は {}で囲まれたBody部
+        if (!consume(TK_LCBACKET)) {
+            error("関数定義に対応する 開きブランケットがありません: %s", name);
+        }
+
+        // Bodyのパース
         Vector *body = func_body();
 
         // TODO 関数に分ける
         Function *function = (Function *)malloc(sizeof(Function));
         function->name = name;
         function->code = body;
-        function->arguments = count_of_arguments;
+        function->arguments = arguments;
         function->variables = local_variables;
 
         if (!consume(TK_RCBACKET)) {

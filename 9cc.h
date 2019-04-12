@@ -61,7 +61,7 @@ typedef struct Node {
 
 typedef struct Function {
     char    *name;      // 関数名
-    int     arguments;  // 引数の数
+    Vector  *arguments; // 引数 (Node)
     Vector  *code;      // 関数の先頭コード
     Map     *variables; // ローカル変数
 } Function;
@@ -102,7 +102,7 @@ Vector *func_body();
 Node *argument(int *count_of_arguments);
 Node *assign();
 Node *stmt();
-int def_argument(char *func_name);
+Vector *def_argument(char *func_name);
 Function *def_function();
 void program();
 
@@ -111,6 +111,7 @@ void tokenize(char *p);
 void gen_equality(Node *node);
 void gen_lval(Node *node);
 void gen(Node *node);
+void gen_function_variables(Function *function);
 void gen_function(Function *function);
 void error(char *message, char *s);
 
