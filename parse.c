@@ -17,6 +17,7 @@
  * func_body: ε
  *
  * stmt: assign ";"
+ * stmt: if
  *
  * assign: equality
  * assign: equality "=" assign
@@ -46,6 +47,13 @@
  *
  * digit: "0" | "1" | "2" | "3" | "4" | "5 | "6" | "7" | "8" | "9"
  * ident: "a" - "z"
+ *
+ *
+ * if ( assign ) {
+ *  func_body
+ * }
+ *
+ *
  */
 
 // 現在パース中の関数のローカル変数を保持する
@@ -251,7 +259,52 @@ Node *argument(int *count_of_arguments) {
     }
 }
 
+// if文のNodeを生成
+Node *ifstmt() {
+    if (!consume('(')) {
+        error("if文の開き括弧がありません. :%s", get_token(pos)->input);
+    }
+
+    // 条件式
+    Node *condition_node = equality();
+
+    if (!consume(')')) {
+        error("if文の閉じ括弧がありません. :%s", get_token(pos)->input);
+    }
+
+    Vector *body_vec = NULL;
+
+    // { があるか確認
+    if (consume(TK_LCBACKET)) {
+        body_vec = func_body();
+        if (!consume(TK_RCBACKET)) {
+            error("if文の終わりが不正です. \"}\"でありません: %s", get_token(pos)->input);
+        }
+    } else {
+        // 1文のみのBody
+        Node *assign_node = assign();
+        body_vec = new_vector();
+        vec_push(body_vec, assign_node);
+        // 最後はTK_STMT(;)のはず
+        if (!consume(TK_STMT)) {
+            error("if文の終わりが不正です. \";\"でありません: %s", get_token(pos)->input);
+        }
+    }
+
+    // IFのNodeを作成
+    Node *node = new_node(ND_IF, condition_node, NULL);
+    node->program = body_vec;
+    node->label = label_++;
+
+    return node;
+}
+
 Node *stmt() {
+    if (consume(TK_IF)) {
+        // if文
+        return ifstmt();
+    }
+
     // assignを評価
     Node *node = assign();
 
@@ -379,6 +432,15 @@ void tokenize(char *p) {
 
             i++;
             p++;
+            continue;
+        }
+
+        // if 文
+        if (*p == 'i' && *(p + 1) == 'f') {
+            Token *token = new_token(TK_IF, p);
+            vec_push(vec, token);
+            i++;
+            p += 2; // 2文字分進める
             continue;
         }
 

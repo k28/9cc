@@ -2,6 +2,7 @@
 
 Vector *tokens;
 Vector *functions;
+int label_ = 0;
 
 // 現在読んでいるトークンの場所
 int pos = 0;

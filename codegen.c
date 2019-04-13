@@ -123,6 +123,22 @@ void gen(Node *node) {
         return;
     }
 
+    if (node->ty == ND_IF) {
+        // ifの時には、左辺を評価してから、結果を確認し
+        // ラベルを作成する
+        gen(node->lhs);
+        printf("  pop rax\n");
+        printf("  cmp rax, 0\n");
+        printf("  je  .Lend%03d\n",node->label);
+        for (int i = 0; i < node->program->len; i++) {
+            gen(node->program->data[i]);
+        }
+
+        // ジャンプ先を定義
+        printf(".Lend%03d:\n",node->label);
+        return;
+    }
+
     gen(node->lhs);
     gen(node->rhs);
 

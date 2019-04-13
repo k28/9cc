@@ -49,5 +49,10 @@ try 3   'hoge(a,b,c,d,e,f){c;} main(){hoge(1,2,3,4,5,6);}'
 try 4   'hoge(a,b,c,d,e,f){d;} main(){hoge(1,2,3,4,5,6);}'
 try 5   'hoge(a,b,c,d,e,f){e;} main(){hoge(1,2,3,4,5,6);}'
 try 6   'hoge(a,b,c,d,e,f){f;} main(){hoge(1,2,3,4,5,6);}'
+try 2   'main(){a = 3; if(a){a = 2;} a;}'
+try 0   'main(){a = 0; if(a){a = 2;} a;}'
+try 2   'hoge(){1;} main(){a = 0; if(hoge()){a = 2;} a;}'
+try 0   'hoge(){0;} main(){a = 0; if(hoge()){a = 2;} a;}'
+try 2   'main(){a = 0; if(a == 0){a = 2;} a;}'
 
 echo OK

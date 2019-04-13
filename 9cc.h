@@ -31,6 +31,7 @@ enum {
     TK_STMT,        // 式の終わり(;)
     TK_LCBACKET,    // { 開く
     TK_RCBACKET,    // } 閉じる
+    TK_IF,          // if 文
     TK_EOF,         // 入力の終わりを表すトークン
 };
 
@@ -49,6 +50,7 @@ enum {
     ND_ASSIGN,      // =
     ND_DEF_ARGUMENT,// 関数の引数定義
     ND_EQUALITY,    // 等値
+    ND_IF,          // if文
 };
 
 typedef struct Node {
@@ -57,6 +59,8 @@ typedef struct Node {
     struct Node *rhs;   // 右辺
     int val;            // tyがND_NUMの場合その値, tyがND_FUNCCALLの場合引数の数
     char *name;         // tyがND_IDENT,ND_FUNCCALLの場合, 等値の場合に値が入る
+    Vector *program;    // tyがND_IFの場合条件にマッチした時の処理が入る
+    int    label;       // tyがND_IFの場合に使うラベル
 } Node;
 
 typedef struct Function {
@@ -70,6 +74,7 @@ typedef struct Function {
 extern Vector *tokens;
 extern Vector *functions;       // 関数を保持するためのベクター
 extern Map    *variables;       // ローカル変数の種類を保持するためのMap
+extern int    label_;            // if文などで使用するラベル番号
 
 // 現在読んでいるトークンの場所
 extern int pos;
@@ -101,6 +106,7 @@ Node *equality();
 Vector *func_body();
 Node *argument(int *count_of_arguments);
 Node *assign();
+Node *ifstmt();
 Node *stmt();
 Vector *def_argument(char *func_name);
 Function *def_function();
