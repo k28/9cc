@@ -32,6 +32,7 @@ enum {
     TK_LCBACKET,    // { 開く
     TK_RCBACKET,    // } 閉じる
     TK_IF,          // if 文
+    TK_WHILE,       // while 文
     TK_EOF,         // 入力の終わりを表すトークン
 };
 
@@ -51,6 +52,7 @@ enum {
     ND_DEF_ARGUMENT,// 関数の引数定義
     ND_EQUALITY,    // 等値
     ND_IF,          // if文
+    ND_WHILE,       // while文
 };
 
 typedef struct Node {
@@ -107,6 +109,7 @@ Vector *func_body();
 Node *argument(int *count_of_arguments);
 Node *assign();
 Node *ifstmt();
+Node *while_stmt();
 Node *stmt();
 Vector *def_argument(char *func_name);
 Function *def_function();

@@ -139,6 +139,29 @@ void gen(Node *node) {
         return;
     }
 
+    if (node->ty == ND_WHILE) {
+        // while文は初めにジャンプ先のラベルを設定
+        printf(".Lbegin%03d:\n",node->label);
+
+        // 条件を評価
+        gen(node->lhs);
+        printf("  pop rax\n");
+        printf("  cmp rax, 0\n");
+        printf("  je  .Lend%03d\n",node->label);
+
+        // whileのbodyを実行
+        for (int i = 0; i < node->program->len; i++) {
+            gen(node->program->data[i]);
+        }
+
+        // beginにジャンプ
+        printf("  jmp .Lbegin%03d\n",node->label);
+
+        // 終了時のジャンプ先を設定
+        printf(".Lend%03d:\n",node->label);
+        return;
+    }
+
     gen(node->lhs);
     gen(node->rhs);
 

@@ -54,5 +54,7 @@ try 0   'main(){a = 0; if(a){a = 2;} a;}'
 try 2   'hoge(){1;} main(){a = 0; if(hoge()){a = 2;} a;}'
 try 0   'hoge(){0;} main(){a = 0; if(hoge()){a = 2;} a;}'
 try 2   'main(){a = 0; if(a == 0){a = 2;} a;}'
+try 55  'main(){a = 10; b = 0; while (a != 0) {b = b + a; a = a - 1;} b;}'
+try 10  'hoge() {1;} main(){a = 10; b = 0; while (a != 0) {b = b + hoge(); a = a - 1;} b;}'
 
 echo OK

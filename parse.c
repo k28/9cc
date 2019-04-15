@@ -18,6 +18,7 @@
  *
  * stmt: assign ";"
  * stmt: if
+ * stmt: while
  *
  * assign: equality
  * assign: equality "=" assign
@@ -50,7 +51,11 @@
  *
  *
  * if ( assign ) {
- *  func_body
+ *     func_body
+ * }
+ *
+ * while ( assign ) {
+ *     func_body
  * }
  *
  *
@@ -299,10 +304,55 @@ Node *ifstmt() {
     return node;
 }
 
+// while文のノードを作成
+Node *while_stmt() {
+    if (!consume('(')) {
+        error("while文の開き括弧がありません. :%s", get_token(pos)->input);
+    }
+
+    // 条件式
+    Node *condition_node = equality();
+
+    if (!consume(')')) {
+        error("while文の閉じ括弧がありません. :%s", get_token(pos)->input);
+    }
+
+    Vector *body_vec = NULL;
+
+    // { があるか確認
+    if (consume(TK_LCBACKET)) {
+        body_vec = func_body();
+        if (!consume(TK_RCBACKET)) {
+            error("while文の終わりが不正です. \"}\"でありません: %s", get_token(pos)->input);
+        }
+    } else {
+        // 1文のみのBody
+        Node *assign_node = assign();
+        body_vec = new_vector();
+        vec_push(body_vec, assign_node);
+        // 最後はTK_STMT(;)のはず
+        if (!consume(TK_STMT)) {
+            error("while文の終わりが不正です. \";\"でありません: %s", get_token(pos)->input);
+        }
+    }
+
+    // IFのNodeを作成
+    Node *node = new_node(ND_WHILE, condition_node, NULL);
+    node->program = body_vec;
+    node->label = label_++;
+
+    return node;
+}
+
 Node *stmt() {
     if (consume(TK_IF)) {
         // if文
         return ifstmt();
+    }
+
+    if (consume(TK_WHILE)) {
+        // while文
+        return while_stmt();
     }
 
     // assignを評価
@@ -436,11 +486,20 @@ void tokenize(char *p) {
         }
 
         // if 文
-        if (*p == 'i' && *(p + 1) == 'f') {
+        if (strncmp(p, "if", 2) == 0) {
             Token *token = new_token(TK_IF, p);
             vec_push(vec, token);
             i++;
             p += 2; // 2文字分進める
+            continue;
+        }
+
+        // while 文
+        if (strncmp(p, "while", 5) == 0) {
+            Token *token = new_token(TK_WHILE, p);
+            vec_push(vec, token);
+            i++;
+            p += 5; // 5文字分進める
             continue;
         }
 
