@@ -46,7 +46,7 @@
  * term: ident
  * term: "(" assign ")"
  *
- * digit: "0" | "1" | "2" | "3" | "4" | "5 | "6" | "7" | "8" | "9"
+ * digit: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
  * ident: "a" - "z"
  *
  *
@@ -58,6 +58,9 @@
  *     func_body
  * }
  *
+ * for (assign; equality; assign) {
+ *     func_body
+ * }
  *
  */
 
@@ -336,8 +339,70 @@ Node *while_stmt() {
         }
     }
 
-    // IFのNodeを作成
+    // WHILEのNodeを作成
     Node *node = new_node(ND_WHILE, condition_node, NULL);
+    node->program = body_vec;
+    node->label = label_++;
+
+    return node;
+}
+
+Node *for_stmt() {
+    if (!consume('(')) {
+        error("for文の開き括弧がありません. :%s", get_token(pos)->input);
+    }
+
+    Node *first_assign = NULL;
+    Node *condition_node = NULL;
+    Node *last_assign = NULL;
+
+    // for文の括弧内の定義を取得
+    if (!consume(TK_STMT)) {
+        // assign
+        first_assign = assign();
+        if (!consume(TK_STMT)) {
+            error("for文 括弧内の定義が不正です. :%s", get_token(pos)->input);
+        }
+    }
+
+    if (!consume(TK_STMT)) {
+        // 条件式
+        condition_node = equality();
+        if (!consume(TK_STMT)) {
+            error("for文 括弧内の定義が不正です. :%s", get_token(pos)->input);
+        }
+    }
+
+    if (!consume(TK_STMT)) {
+        // add
+        last_assign = assign();
+        if (!consume(TK_STMT)) {
+            error("for文 括弧内の定義が不正です. :%s", get_token(pos)->input);
+        }
+    }
+
+    if (!consume(')')) {
+        error("for文の閉じ括弧がありません. :%s", get_token(pos)->input);
+    }
+
+    // bodyをパース
+    Vector *body_vec = NULL;
+    if (consume(TK_LCBACKET)) {
+        body_vec = func_body();
+        if (!consume(TK_RCBACKET)) {
+            error("for文の終わりが不正です. \"}\"でありません: %s", get_token(pos)->input);
+        }
+    }
+
+    if (last_assign != NULL) {
+        // last_assignはbodyの最後に実行すれば良いので
+        // bodyの最後に追加する
+        vec_push(body_vec, last_assign);
+    }
+
+    // FORのNodeを作成
+    // FORのNodeは左辺に初期設定, 右辺に条件を入れる
+    Node *node = new_node(ND_FOR, first_assign, condition_node);
     node->program = body_vec;
     node->label = label_++;
 
@@ -353,6 +418,11 @@ Node *stmt() {
     if (consume(TK_WHILE)) {
         // while文
         return while_stmt();
+    }
+
+    if (consume(TK_FOR)) {
+        // while文
+        return for_stmt();
     }
 
     // assignを評価
@@ -500,6 +570,15 @@ void tokenize(char *p) {
             vec_push(vec, token);
             i++;
             p += 5; // 5文字分進める
+            continue;
+        }
+
+        // for 文
+        if (strncmp(p, "for", 3) == 0) {
+            Token *token = new_token(TK_FOR, p);
+            vec_push(vec, token);
+            i++;
+            p += 3; // 3文字分進める
             continue;
         }
 

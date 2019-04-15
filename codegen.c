@@ -162,6 +162,35 @@ void gen(Node *node) {
         return;
     }
 
+    if (node->ty == ND_FOR) {
+        if (node->lhs != NULL) {
+            // 初めに初期設定を行う
+            gen(node->lhs);
+        }
+
+        // ループ時のジャンプ先を追加
+        printf(".Lbegin%03d:\n",node->label);
+
+        if (node->rhs != NULL) {
+            // 条件を評価 (for文はrhsに条件が入っている)
+            gen(node->rhs);
+            printf("  pop rax\n");
+            printf("  cmp rax, 0\n");
+            printf("  je  .Lend%03d\n",node->label);
+        }
+
+        // forのbodyを実行
+        for (int i = 0; i < node->program->len; i++) {
+            gen(node->program->data[i]);
+        }
+        // beginにジャンプ
+        printf("  jmp .Lbegin%03d\n",node->label);
+
+        // 終了時のジャンプ先を設定
+        printf(".Lend%03d:\n",node->label);
+        return;
+    }
+
     gen(node->lhs);
     gen(node->rhs);
 

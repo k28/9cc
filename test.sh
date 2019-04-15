@@ -56,5 +56,8 @@ try 0   'hoge(){0;} main(){a = 0; if(hoge()){a = 2;} a;}'
 try 2   'main(){a = 0; if(a == 0){a = 2;} a;}'
 try 55  'main(){a = 10; b = 0; while (a != 0) {b = b + a; a = a - 1;} b;}'
 try 10  'hoge() {1;} main(){a = 10; b = 0; while (a != 0) {b = b + hoge(); a = a - 1;} b;}'
+try 55  'main(){a = 0; for(i = 0; i != 11; i = i + 1;){a = a + i;} a;}'
+try 10  'main(){a = 0; i = 10; for(; i != 11; i = i + 1;){a = a + i;} a;}'
+try 10  'main(){a = 0; i = 10; for(; i != 11;;){a = a + i; i = i + 1;} a;}'
 
 echo OK

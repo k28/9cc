@@ -33,6 +33,7 @@ enum {
     TK_RCBACKET,    // } 閉じる
     TK_IF,          // if 文
     TK_WHILE,       // while 文
+    TK_FOR,         // for 文
     TK_EOF,         // 入力の終わりを表すトークン
 };
 
@@ -53,6 +54,7 @@ enum {
     ND_EQUALITY,    // 等値
     ND_IF,          // if文
     ND_WHILE,       // while文
+    ND_FOR,         // for文
 };
 
 typedef struct Node {
@@ -61,8 +63,8 @@ typedef struct Node {
     struct Node *rhs;   // 右辺
     int val;            // tyがND_NUMの場合その値, tyがND_FUNCCALLの場合引数の数
     char *name;         // tyがND_IDENT,ND_FUNCCALLの場合, 等値の場合に値が入る
-    Vector *program;    // tyがND_IFの場合条件にマッチした時の処理が入る
-    int    label;       // tyがND_IFの場合に使うラベル
+    Vector *program;    // tyがif,for,whileの場合条件にマッチした時の処理が入る
+    int    label;       // tyがif,for,whileの場合に使うラベル
 } Node;
 
 typedef struct Function {
@@ -110,6 +112,7 @@ Node *argument(int *count_of_arguments);
 Node *assign();
 Node *ifstmt();
 Node *while_stmt();
+Node *for_stmt();
 Node *stmt();
 Vector *def_argument(char *func_name);
 Function *def_function();
