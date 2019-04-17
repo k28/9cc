@@ -16,9 +16,13 @@
  * func_body: stmt func_body
  * func_body: ε
  *
- * stmt: assign ";"
+ * stmt: return ";"
  * stmt: if
  * stmt: while
+ * stmt: for
+ *
+ * return: assign
+ * return: "return" assign
  *
  * assign: equality
  * assign: equality "=" assign
@@ -249,6 +253,16 @@ Node *assign() {
     }
 }
 
+Node *return_node() {
+    if (consume(TK_RETURN)) {
+        // return statement
+        Node *node = new_node(ND_RETURN, NULL, assign());
+        return node;
+    }
+
+    return assign();
+}
+
 Node *argument(int *count_of_arguments) {
     if (consume_not_add(pos, ')')) {
         // エラーチェックのため 上位で閉じ括弧の有無をチェックする
@@ -290,7 +304,7 @@ Node *ifstmt() {
         }
     } else {
         // 1文のみのBody
-        Node *assign_node = assign();
+        Node *assign_node = return_node();
         body_vec = new_vector();
         vec_push(body_vec, assign_node);
         // 最後はTK_STMT(;)のはず
@@ -330,7 +344,7 @@ Node *while_stmt() {
         }
     } else {
         // 1文のみのBody
-        Node *assign_node = assign();
+        Node *assign_node = return_node();
         body_vec = new_vector();
         vec_push(body_vec, assign_node);
         // 最後はTK_STMT(;)のはず
@@ -425,8 +439,8 @@ Node *stmt() {
         return for_stmt();
     }
 
-    // assignを評価
-    Node *node = assign();
+    // returnを評価
+    Node *node = return_node();
 
     // 最後はTK_STMT(;)のはず
     if (!consume(TK_STMT)) {
@@ -513,6 +527,7 @@ Function *def_function() {
         function->code = body;
         function->arguments = arguments;
         function->variables = local_variables;
+        function->label = label_++;
 
         if (!consume(TK_RCBACKET)) {
             error("関数定義に対応する 閉じブランケットがありません: %s", name);
@@ -579,6 +594,15 @@ void tokenize(char *p) {
             vec_push(vec, token);
             i++;
             p += 3; // 3文字分進める
+            continue;
+        }
+
+        // return 文
+        if (strncmp(p, "return", 6) == 0) {
+            Token *token = new_token(TK_RETURN, p);
+            vec_push(vec, token);
+            i++;
+            p += 6;
             continue;
         }
 

@@ -59,5 +59,10 @@ try 10  'hoge() {1;} main(){a = 10; b = 0; while (a != 0) {b = b + hoge(); a = a
 try 55  'main(){a = 0; for(i = 0; i != 11; i = i + 1;){a = a + i;} a;}'
 try 10  'main(){a = 0; i = 10; for(; i != 11; i = i + 1;){a = a + i;} a;}'
 try 10  'main(){a = 0; i = 10; for(; i != 11;;){a = a + i; i = i + 1;} a;}'
+try 10  'main(){return 10;}'
+try 0   'main(){for(i = 0; i != 10; i = i + 1;){return i;} return 10;}'
+try 5   'main(){for(i = 0; i != 10; i = i + 1;){ if (i == 5) return i;} return 10;}'
+try 5   'hoge(x) {if (x == 0) return 5; return 10;} main(){return hoge(0);}'
+try 10  'hoge(x) {if (x == 0) return 5; return 10;} main(){return hoge(1);}'
 
 echo OK

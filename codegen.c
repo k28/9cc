@@ -1,5 +1,7 @@
 #include "9cc.h"
 
+int    return_label_;        // return文の飛び先ラベル
+
 // 等値の対応
 void gen_equality(Node *node) {
     //
@@ -191,6 +193,19 @@ void gen(Node *node) {
         return;
     }
 
+    if (node->ty == ND_RETURN) {
+        // 右辺を評価
+        if (node->rhs != NULL) {
+            gen(node->rhs);
+        }
+
+        // 結果をraxに入れる
+        printf("  pop rax\n");
+        // return最後にジャンプ
+        printf("  jmp .Lreturn%03d\n",return_label_);
+        return;
+    }
+
     gen(node->lhs);
     gen(node->rhs);
 
@@ -264,6 +279,8 @@ void gen_function(Function *function) {
 
     // ローカル変数のMapをグローバル領域にコピー
     variables = function->variables;
+    // return文用のラベルを設定
+    return_label_ = function->label;
 
     // プロローグ
     // 変数の数分の領域を確保する
@@ -286,6 +303,9 @@ void gen_function(Function *function) {
         // スタックが溢れないようにポップしておく
         printf("  pop rax\n");
     }
+
+    // return文の飛び先タグを作成
+    printf(".Lreturn%03d:\n",function->label);
 
     // エピローグ
     // 最後の式の結果がRAXに残っているのでそれが帰り値になる

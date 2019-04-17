@@ -34,6 +34,7 @@ enum {
     TK_IF,          // if 文
     TK_WHILE,       // while 文
     TK_FOR,         // for 文
+    TK_RETURN,      // return 文
     TK_EOF,         // 入力の終わりを表すトークン
 };
 
@@ -55,6 +56,7 @@ enum {
     ND_IF,          // if文
     ND_WHILE,       // while文
     ND_FOR,         // for文
+    ND_RETURN,      // return文
 };
 
 typedef struct Node {
@@ -72,13 +74,15 @@ typedef struct Function {
     Vector  *arguments; // 引数 (Node)
     Vector  *code;      // 関数の先頭コード
     Map     *variables; // ローカル変数
+    int     label;      // return文用のラベル
 } Function;
 
 // トークナイズした結果のトークンを保持するベクター
 extern Vector *tokens;
-extern Vector *functions;       // 関数を保持するためのベクター
-extern Map    *variables;       // ローカル変数の種類を保持するためのMap
-extern int    label_;            // if文などで使用するラベル番号
+extern Vector *functions;           // 関数を保持するためのベクター
+extern Map    *variables;           // ローカル変数の種類を保持するためのMap
+extern int    label_;               // if文などで使用するラベル番号
+extern int    return_label_;        // return文の飛び先ラベル
 
 // 現在読んでいるトークンの場所
 extern int pos;
@@ -110,6 +114,7 @@ Node *equality();
 Vector *func_body();
 Node *argument(int *count_of_arguments);
 Node *assign();
+Node *return_node();
 Node *ifstmt();
 Node *while_stmt();
 Node *for_stmt();
