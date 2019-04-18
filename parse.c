@@ -9,8 +9,8 @@
  *
  * def_func: ident "(" def_argument ")" "{" func_body "}"
  *
- * def_argument: ident
- * def_argument: ident "," def_argument
+ * def_argument: "int" ident
+ * def_argument: "int" ident "," def_argument
  * def_argument: ε
  *
  * func_body: stmt func_body
@@ -502,26 +502,30 @@ Vector *def_argument(char *func_name) {
     Vector *arguments = new_vector();
 
     for (;;) {
-        if(get_token(pos)->ty == TK_IDENT) {
-            // 変数名
-            char *name = get_token(pos++)->input;
-            // 関数定義の変数はローカル変数と同じ扱いにする
-            int *count_of_value = map_get(variables, name);
-            if (count_of_value == NULL) {
-                count_of_value = malloc(sizeof(int));
-                // 変数の出現順をIndexにする
-                *count_of_value = variables->keys->len;
-                map_put(variables, name, count_of_value);
+        if (consume(TK_INT)) {
+            if(get_token(pos)->ty == TK_IDENT) {
+                // 変数名
+                char *name = get_token(pos++)->input;
+                // 関数定義の変数はローカル変数と同じ扱いにする
+                int *count_of_value = map_get(variables, name);
+                if (count_of_value == NULL) {
+                    count_of_value = malloc(sizeof(int));
+                    // 変数の出現順をIndexにする
+                    *count_of_value = variables->keys->len;
+                    map_put(variables, name, count_of_value);
 
-                Node *node = new_node(ND_IDENT, NULL, NULL);
-                node->name = name;
-                vec_push(arguments, node);
+                    Node *node = new_node(ND_IDENT, NULL, NULL);
+                    node->name = name;
+                    vec_push(arguments, node);
+                }
+                continue;
             }
-            continue;
         }
+
         if (consume(TK_COMMA)) {
             continue;
         }
+
         if (consume(')')) {
             break;
         }
