@@ -7,7 +7,7 @@
  * program: def_func def_func
  * program: ε
  *
- * def_func: ident "(" def_argument ")" "{" func_body "}"
+ * def_func: "int" ident "(" def_argument ")" "{" func_body "}"
  *
  * def_argument: "int" ident
  * def_argument: "int" ident "," def_argument
@@ -539,7 +539,7 @@ Vector *def_argument(char *func_name) {
 
 // 関数定義
 Function *def_function() {
-    if (get_token(pos)->ty == TK_IDENT && consume_not_add(pos + 1, '(')) {
+    if (consume(TK_INT) && get_token(pos)->ty == TK_IDENT && consume_not_add(pos + 1, '(')) {
         // 関数名を取得
         char *name = get_token(pos++)->input;
         pos++;  // 前カッコ "(" 分進める
