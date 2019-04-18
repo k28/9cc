@@ -35,6 +35,7 @@ enum {
     TK_WHILE,       // while 文
     TK_FOR,         // for 文
     TK_RETURN,      // return 文
+    TK_INT,         // int 定義 
     TK_EOF,         // 入力の終わりを表すトークン
 };
 

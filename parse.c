@@ -17,6 +17,7 @@
  * func_body: ε
  *
  * stmt: return ";"
+ * stmt: def_variable ";"
  * stmt: if
  * stmt: while
  * stmt: for
@@ -53,6 +54,7 @@
  * digit: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
  * ident: "a" - "z"
  *
+ * defvariable: "int" ident ";"
  *
  * if ( assign ) {
  *     func_body
@@ -156,15 +158,10 @@ Node *term() {
         // 変数
         Node *node = new_node(ND_IDENT, NULL, NULL);
         node->name = name;
-        // 変数の数を数えるためにMapに値を入れる
-        // variablesに登録されていない変数はスタックに積む必要がある
-        // valsに変数のIndexを入れる
+        // 登録されている変数か確認する
         int *count_of_value = map_get(variables, node->name);
         if (count_of_value == NULL) {
-            count_of_value = malloc(sizeof(int));
-            // 変数の出現順をIndexにする
-            *count_of_value = variables->keys->len;
-            map_put(variables, node->name, count_of_value);
+            error("定義されていない変数です: %s", name);
         }
         return node;
     }
@@ -423,6 +420,40 @@ Node *for_stmt() {
     return node;
 }
 
+Node *def_variable() {
+    // int hoge;
+
+    if (get_token(pos)->ty == TK_IDENT) {
+        // 名称を取得しておく
+        char *name = get_token(pos++)->input;
+        // 変数
+        Node *node = new_node(ND_IDENT, NULL, NULL);
+        node->name = name;
+        // 変数の数を数えるためにMapに値を入れる
+        // variablesに登録されていない変数はスタックに積む必要がある
+        // valsに変数のIndexを入れる
+        int *count_of_value = map_get(variables, node->name);
+        if (count_of_value == NULL) {
+            count_of_value = malloc(sizeof(int));
+            // 変数の出現順をIndexにする
+            *count_of_value = variables->keys->len;
+            map_put(variables, node->name, count_of_value);
+        } else {
+            // 2重に定義されている...
+        }
+
+        // 最後はTK_STMT(;)のはず
+        if (!consume(TK_STMT)) {
+            error("変数定義の終わりが不正です. \";\"でありません: %s", get_token(pos)->input);
+        }
+
+        return node;
+    }
+
+    error("変数定義が不正です. : %s", get_token(pos)->input);
+    return NULL;
+}
+
 Node *stmt() {
     if (consume(TK_IF)) {
         // if文
@@ -437,6 +468,10 @@ Node *stmt() {
     if (consume(TK_FOR)) {
         // while文
         return for_stmt();
+    }
+
+    if (consume(TK_INT)) {
+        return def_variable();
     }
 
     // returnを評価
@@ -603,6 +638,15 @@ void tokenize(char *p) {
             vec_push(vec, token);
             i++;
             p += 6;
+            continue;
+        }
+
+        // int
+        if (strncmp(p, "int", 3) == 0) {
+            Token *token = new_token(TK_INT, p);
+            vec_push(vec, token);
+            i++;
+            p += 3;
             continue;
         }
 
