@@ -64,5 +64,6 @@ try 0   'int main(){int i; for(i = 0; i != 10; i = i + 1;){return i;} return 10;
 try 5   'int main(){int i; for(i = 0; i != 10; i = i + 1;){ if (i == 5) return i;} return 10;}'
 try 5   'int hoge(int x) {if (x == 0) return 5; return 10;} int main(){return hoge(0);}'
 try 10  'int hoge(int x) {if (x == 0) return 5; return 10;} int main(){return hoge(1);}'
+try 10  'int main(){int a; int *b; a = 10; return a;}'
 
 echo OK

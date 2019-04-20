@@ -83,6 +83,12 @@ typedef struct Type {
     struct Type *ptrof;
 } Type;
 
+// 変数定義を表す構造体
+typedef struct Variable {
+    struct Type *type;
+    int stack_offset;
+} Variable;
+
 // トークナイズした結果のトークンを保持するベクター
 extern Vector *tokens;
 extern Vector *functions;           // 関数を保持するためのベクター
@@ -110,6 +116,8 @@ Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
 
 Type *new_type(int ty, Type *ptrof);
+
+Variable *new_variable(Type *type, int offset);
 
 int consume_not_add(int index, int ty);
 int consume(int ty);

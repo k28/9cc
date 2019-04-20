@@ -26,9 +26,9 @@ void gen_lval(Node *node) {
         error("代入の左辺値が変数ではありません","");
     }
 
-    // variablesに変数とオフセットが0オリジンで入っている
-    int *stack_offset = map_get(variables, node->name);
-    int offset = (*stack_offset + 1) * SIZE_OF_ADDRESS;
+    // variablesには変数の型とスタックオフセットが入っている
+    Variable *val_info = map_get(variables, node->name);
+    int offset = val_info->stack_offset * SIZE_OF_ADDRESS;
     printf("  mov rax, rbp\n");
     printf("  sub rax, %d\n", offset);
     printf("  push rax\n");
@@ -246,8 +246,8 @@ void gen_function_variables(Function *function) {
     // 変数はrgpからのオフセットでアクセスする
     for (int i = 0; i < function->arguments->len; i++) {
         Node *argnode = function->arguments->data[i];
-        int *stach_offset = map_get(function->variables, argnode->name);
-        int offset = (*stach_offset + 1) * SIZE_OF_ADDRESS;
+        Variable *val_info = map_get(function->variables, argnode->name);
+        int offset = val_info->stack_offset * SIZE_OF_ADDRESS;
         printf("  mov rax, rbp\n");
         printf("  sub rax, %d\n", offset);
         switch(i + 1) {

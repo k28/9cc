@@ -52,6 +52,13 @@ Type *new_type(int ty, Type *ptrof) {
     return type;
 }
 
+Variable *new_variable(Type *type, int offset) {
+    Variable *value = malloc(sizeof(Variable));
+    value->type = type;
+    value->stack_offset = offset;
+    return value;
+}
+
 // エラー表示用関数
 void error(char *message, char *s) {
     fprintf(stderr, message, s);

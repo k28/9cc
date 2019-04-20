@@ -54,7 +54,7 @@
  * digit: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
  * ident: "a" - "z"
  *
- * defvariable: "int" ident ";"
+ * def_variable: "int" "*"* ident ";"
  *
  * if ( assign ) {
  *     func_body
@@ -423,6 +423,14 @@ Node *for_stmt() {
 Node *def_variable() {
     // int hoge;
 
+    // このデータの型
+    Type *type = new_type(INT, NULL);
+    // *があればtypeに足していく
+    while (consume('*')) {
+        Type *ptr_type = new_type(PTR, type);
+        type = ptr_type;
+    }
+
     if (get_token(pos)->ty == TK_IDENT) {
         // 名称を取得しておく
         char *name = get_token(pos++)->input;
@@ -431,13 +439,12 @@ Node *def_variable() {
         node->name = name;
         // 変数の数を数えるためにMapに値を入れる
         // variablesに登録されていない変数はスタックに積む必要がある
-        // valsに変数のIndexを入れる
-        int *count_of_value = map_get(variables, node->name);
-        if (count_of_value == NULL) {
-            count_of_value = malloc(sizeof(int));
-            // 変数の出現順をIndexにする
-            *count_of_value = variables->keys->len;
-            map_put(variables, node->name, count_of_value);
+        Variable *val_info = map_get(variables, node->name);
+        if (val_info == NULL) {
+            // 変数の出現順に1足して、スタック上のオフセットにする
+            int stack_offset = variables->keys->len + 1;
+            val_info = new_variable(type, stack_offset);
+            map_put(variables, node->name, val_info);
         } else {
             // 2重に定義されている...
         }
@@ -503,16 +510,24 @@ Vector *def_argument(char *func_name) {
 
     for (;;) {
         if (consume(TK_INT)) {
+            // このデータの型
+            Type *type = new_type(INT, NULL);
+            // *があればtypeに足していく
+            while (consume('*')) {
+                Type *ptr_type = new_type(PTR, type);
+                type = ptr_type;
+            }
+
             if(get_token(pos)->ty == TK_IDENT) {
                 // 変数名
                 char *name = get_token(pos++)->input;
                 // 関数定義の変数はローカル変数と同じ扱いにする
-                int *count_of_value = map_get(variables, name);
-                if (count_of_value == NULL) {
-                    count_of_value = malloc(sizeof(int));
-                    // 変数の出現順をIndexにする
-                    *count_of_value = variables->keys->len;
-                    map_put(variables, name, count_of_value);
+                Variable *val_info = map_get(variables, name);
+                if (val_info == NULL) {
+                    // 変数の出現順に1足して、スタック上のオフセットにする
+                    int stack_offset = variables->keys->len + 1;
+                    val_info = new_variable(type, stack_offset);
+                    map_put(variables, name, val_info);
 
                     Node *node = new_node(ND_IDENT, NULL, NULL);
                     node->name = name;
