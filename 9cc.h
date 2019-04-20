@@ -77,6 +77,12 @@ typedef struct Function {
     int     label;      // return文用のラベル
 } Function;
 
+// 型を表す構造体
+typedef struct Type {
+    enum { INT, PTR } ty;
+    struct Type *ptrof;
+} Type;
+
 // トークナイズした結果のトークンを保持するベクター
 extern Vector *tokens;
 extern Vector *functions;           // 関数を保持するためのベクター
@@ -102,6 +108,8 @@ Token *get_token(int pos);
 
 Node *new_node(int ty, Node *lhs, Node *rhs);
 Node *new_node_num(int val);
+
+Type *new_type(int ty, Type *ptrof);
 
 int consume_not_add(int index, int ty);
 int consume(int ty);

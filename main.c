@@ -17,6 +17,7 @@ int main(int argc, char **argv) {
     if (strcmp("-test", argv[1]) == 0) {
         test_vector();
         test_map();
+        test_type();
         return 0;
     }
 

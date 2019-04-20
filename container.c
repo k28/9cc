@@ -45,6 +45,13 @@ void *map_get(Map *map, char *key) {
     return NULL;
 }
 
+Type *new_type(int ty, Type *ptrof) {
+    Type *type = malloc(sizeof(Type));
+    type->ty = ty;
+    type->ptrof = ptrof;
+    return type;
+}
+
 // エラー表示用関数
 void error(char *message, char *s) {
     fprintf(stderr, message, s);
@@ -92,5 +99,17 @@ void test_map() {
     expect(__LINE__, 6, (intptr_t)map_get(map, "foo"));
 
     printf("test_map OK\n");
+}
+
+void test_type() {
+    Type *type = new_type(INT, NULL);
+    expect(__LINE__, INT, type->ty);
+    expect(__LINE__, 0, (intptr_t)type->ptrof);
+
+    Type *intptr = new_type(PTR, type);
+    expect(__LINE__, PTR, intptr->ty);
+    expect(__LINE__, (intptr_t)type, (intptr_t)intptr->ptrof);
+
+    printf("test_type OK\n");
 }
 
