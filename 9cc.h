@@ -5,7 +5,6 @@
 #include <string.h>
 #include <stdint.h>
 
-#define MAX_CODE_NUM    (100)
 #define SIZE_OF_ADDRESS (8)
 
 // 可変長ベクタ
