@@ -154,4 +154,5 @@ void error(char *message, char *s);
 void expect(int line, int expected, int actual);
 void test_vector();
 void test_map();
+void test_type();
 
