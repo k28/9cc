@@ -57,6 +57,8 @@ enum {
     ND_WHILE,       // while文
     ND_FOR,         // for文
     ND_RETURN,      // return文
+    ND_DEREFERENCE, // デリファレンス演算子
+    ND_REFERENCE,   // リファレンス演算子 (&)
 };
 
 typedef struct Node {

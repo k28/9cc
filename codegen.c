@@ -22,6 +22,12 @@ void gen_equality(Node *node) {
 
 // 与えられたノードが変数を表しているときに、その変数のアドレスを計算してスタックにプッシュする
 void gen_lval(Node *node) {
+    if (node->ty == ND_DEREFERENCE) {
+        // 右辺値をコンパイルする
+        gen(node->rhs);
+        return;
+    }
+
     if (node->ty != ND_IDENT) {
         error("代入の左辺値が変数ではありません","");
     }
@@ -29,9 +35,9 @@ void gen_lval(Node *node) {
     // variablesには変数の型とスタックオフセットが入っている
     Variable *val_info = map_get(variables, node->name);
     int offset = val_info->stack_offset * SIZE_OF_ADDRESS;
-    printf("  mov rax, rbp\n");
-    printf("  sub rax, %d\n", offset);
-    printf("  push rax\n");
+        printf("  mov rax, rbp\n");
+        printf("  sub rax, %d\n", offset);
+        printf("  push rax\n");
 }
 
 // 引数をレジスタにセットする
@@ -108,6 +114,23 @@ void gen(Node *node) {
         printf("  pop rax\n");
         printf("  mov rax, [rax]\n");
         printf("  push rax\n");
+        return;
+    }
+
+    if (node->ty == ND_DEREFERENCE) {
+        // デリファレンス演算子(*)が、左辺値として定義された場合
+        // 右辺値をそのままコンパイルする
+        gen(node->rhs);
+        // 変数のアドレスが示すものをスタックに入れる
+        printf("  pop rax\n");
+        printf("  mov rax, [rax]\n");
+        printf("  push rax\n");
+        return;
+    }
+
+    if (node->ty == ND_REFERENCE) {
+        // リファレンス演算子(&), 右辺の変数のアドレスをスタックに入れる
+        gen_lval(node->rhs);
         return;
     }
 

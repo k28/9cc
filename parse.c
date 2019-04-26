@@ -152,17 +152,36 @@ Node *term() {
         return new_node_num(get_token(pos++)->val);
     }
 
+    if (get_token(pos)->ty == '*') {
+        // デリファレンス演算子
+        // 中の構文を右辺値としてコンパイルする
+        pos++;
+        Node *rhs_node = term();
+        Node *node = new_node(ND_DEREFERENCE, NULL, rhs_node);
+        return node;
+    }
+
+    if (get_token(pos)->ty == '&') {
+        // リファレンス演算子
+        // 中の構文を右辺値としてコンパイルする
+        pos++;
+        Node *rhs_node = term();
+        Node *node = new_node(ND_REFERENCE, NULL, rhs_node);
+        return node;
+    }
+
     if (get_token(pos)->ty == TK_IDENT) {
         // 名称を取得しておく
         char *name = get_token(pos++)->input;
+        // IDENTの変数定義を取得
+        Variable *val_info = map_get(variables, name);
+        if (val_info == NULL) {
+            error("定義されていない変数です: %s", name);
+        }
+
         // 変数
         Node *node = new_node(ND_IDENT, NULL, NULL);
         node->name = name;
-        // 登録されている変数か確認する
-        int *count_of_value = map_get(variables, node->name);
-        if (count_of_value == NULL) {
-            error("定義されていない変数です: %s", name);
-        }
         return node;
     }
 
@@ -615,7 +634,7 @@ void tokenize(char *p) {
         }
 
         // 演算子, 括弧
-        if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')') {
+        if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '&' ) {
             Token *token = new_token(*p, p);
             vec_push(vec, token);
 
