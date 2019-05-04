@@ -141,6 +141,7 @@ Vector *def_argument(char *func_name);
 Function *def_function();
 void program();
 
+int is_ident_word(char *p);
 void tokenize(char *p);
 
 void gen_equality(Node *node);

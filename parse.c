@@ -622,6 +622,16 @@ void program() {
     }
 }
 
+// 引数の文字がIDENT/関数名として有効か返す
+// 有効な場合は0を返す
+int is_ident_word(char *p) {
+    if ('a' <= *p && *p <= 'z') {
+        return 0;
+    }
+
+    return  1;
+}
+
 // pが指している文字列をトークンに分割してtokensに保存する
 void tokenize(char *p) {
     Vector *vec = new_vector();
@@ -695,7 +705,7 @@ void tokenize(char *p) {
         if ('a' <= *p && *p <= 'z') {
             char *pstart = p;
             int char_len = 0;
-            while ('a' <= *p && *p <= 'z') {
+            while (is_ident_word(p) == 0) {
                 p++;
                 char_len++;
             }
