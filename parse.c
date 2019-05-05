@@ -628,6 +628,15 @@ int is_ident_word(char *p) {
     if ('a' <= *p && *p <= 'z') {
         return 0;
     }
+    if ('A' <= *p && *p <= 'Z') {
+        return 0;
+    }
+    if ('0' <= *p && *p <= '9') {
+        return 0;
+    }
+    if (*p == '_') {
+        return 0;
+    }
 
     return  1;
 }
