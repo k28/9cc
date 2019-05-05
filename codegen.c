@@ -1,6 +1,7 @@
 #include "9cc.h"
 
 int    return_label_;        // return文の飛び先ラベル
+int    current_pointer_offset_ = 1;
 
 // 等値の対応
 void gen_equality(Node *node) {
@@ -35,9 +36,10 @@ void gen_lval(Node *node) {
     // variablesには変数の型とスタックオフセットが入っている
     Variable *val_info = map_get(variables, node->name);
     int offset = val_info->stack_offset * SIZE_OF_ADDRESS;
-        printf("  mov rax, rbp\n");
-        printf("  sub rax, %d\n", offset);
-        printf("  push rax\n");
+    printf("  mov rax, rbp\n");
+    printf("  sub rax, %d\n", offset);
+    printf("  push rax\n");
+
 }
 
 // 引数をレジスタにセットする
@@ -82,7 +84,7 @@ void gen_arguments(char *func_name, int arg_count) {
 void gen(Node *node) {
 
     if (node->ty == ND_NUM) {
-        printf("  push %d\n", node->val);
+        printf("  push %d\n", node->val * current_pointer_offset_);
         return;
     }
 
@@ -140,6 +142,25 @@ void gen(Node *node) {
         // 左の変数をgen_lvalでスタックに入れておいてから
         // genで右辺を評価して結果を代入する
         gen_lval(node->lhs);
+
+        // 変数の場合は、ポインター演算か確認する
+        if (node->lhs->ty == ND_IDENT) {
+            Variable *val_info = map_get(variables, node->lhs->name);
+            if (val_info->type->ty == INT) {
+                // INTの変数
+                current_pointer_offset_ = 1;
+            }
+            if (val_info->type->ty == PTR && val_info->type->ptrof->ty == INT) {
+                // INTへのポインター
+                // TODO INTのポインターサイズにする必要がある
+                current_pointer_offset_ = 4;
+            }
+            if (val_info->type->ty == PTR && val_info->type->ptrof->ty == PTR) {
+                // ポインターへのポインター
+                current_pointer_offset_ = SIZE_OF_ADDRESS;
+            }
+        }
+
         gen(node->rhs);
         printf("  pop rdi\n");
         printf("  pop rax\n");
@@ -309,6 +330,7 @@ void gen_function(Function *function) {
     // 変数の数分の領域を確保する
     // 関数呼び出しをする際にはRSPが16の倍数になっている必要があるとのこと
     // ココで調整しているけど、正しい?
+    // TODO 変数の型によって加算するサイズを変更する必要がある
     int size_of_variables = function->variables->keys->len * SIZE_OF_ADDRESS;
     int rsp_offset = size_of_variables % 16;
     size_of_variables += rsp_offset;
@@ -321,6 +343,7 @@ void gen_function(Function *function) {
 
     // コード生成
     for (int i = 0; i < function->code->len; i++) {
+        current_pointer_offset_ = 1;
         gen(function->code->data[i]);
         // 式の評価結果としてスタックに1つの値が残っているはずなので
         // スタックが溢れないようにポップしておく

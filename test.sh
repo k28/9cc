@@ -70,7 +70,8 @@ try 13  'int main(){int x; x = 3; int *y; y = &x; x = 13; return *y;}'
 try 11  'int main(){int a; int *b; *b = 10;  a = *b; a = a + 1; return a;}'
 try 10  'int main(){int a; int *b;  a = 10; *b = a;  return *b;}'
 try 7   'int main(){int a; a = func_TEST01(); return a;}'
-#try 4   'int main(){int *p; alloc4(&p, 1, 2, 3, 4); int *q; q = p + 2; return *q;}'
-#try 8   'int main(){int *p; alloc4(&p, 1, 2, 3, 4); int *q; q = p + 2; *q; q = p + 3; return *q;}'
+try 1   'int main(){int *p; alloc4(&p, 1, 2, 4, 8); return 1;}'
+try 4   'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 2; return *q;}'
+try 8   'int main(){int *p; alloc4(&p, 1, 2, 4, 8); int *q; q = p + 2; *q; q = p + 3; return *q;}'
 
 echo OK

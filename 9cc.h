@@ -97,6 +97,7 @@ extern Vector *functions;           // 関数を保持するためのベクタ�
 extern Map    *variables;           // ローカル変数の種類を保持するためのMap
 extern int    label_;               // if文などで使用するラベル番号
 extern int    return_label_;        // return文の飛び先ラベル
+extern int    current_pointer_offset_;// 現在のポインタ演算のオフセット(ただの演算の場合は1になる)
 
 // 現在読んでいるトークンの場所
 extern int pos;
