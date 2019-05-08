@@ -179,6 +179,16 @@ Node *term() {
 
 Node *unary() {
 
+    if (consume('+')) {
+        // +x を x に置き換え
+        return term();
+    }
+
+    if (consume('-')) {
+        // -x を 0 - x に置き換え
+        return new_node('-', new_node_num(0), term());
+    }
+
     if (get_token(pos)->ty == '*') {
         // デリファレンス演算子
         // 中の構文を右辺値としてコンパイルする
