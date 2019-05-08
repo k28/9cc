@@ -41,7 +41,13 @@
  * mul: mul "/" func
  *
  * func: ident "(" argument ")"
- * func: term
+ * func: unary
+ *
+ * unary: term
+ * unary: "+" term
+ * unary: "-" term
+ * unary: "&" unary
+ * unary: "*" unary
  *
  * argument: equality
  * argument: equality "," equality
@@ -152,24 +158,6 @@ Node *term() {
         return new_node_num(get_token(pos++)->val);
     }
 
-    if (get_token(pos)->ty == '*') {
-        // デリファレンス演算子
-        // 中の構文を右辺値としてコンパイルする
-        pos++;
-        Node *rhs_node = term();
-        Node *node = new_node(ND_DEREFERENCE, NULL, rhs_node);
-        return node;
-    }
-
-    if (get_token(pos)->ty == '&') {
-        // リファレンス演算子
-        // 中の構文を右辺値としてコンパイルする
-        pos++;
-        Node *rhs_node = term();
-        Node *node = new_node(ND_REFERENCE, NULL, rhs_node);
-        return node;
-    }
-
     if (get_token(pos)->ty == TK_IDENT) {
         // 名称を取得しておく
         char *name = get_token(pos++)->input;
@@ -187,6 +175,29 @@ Node *term() {
 
     error("数値でも開き括弧でもないトークンです: %s", get_token(pos)->input);
     return NULL;
+}
+
+Node *unary() {
+
+    if (get_token(pos)->ty == '*') {
+        // デリファレンス演算子
+        // 中の構文を右辺値としてコンパイルする
+        pos++;
+        Node *rhs_node = unary();
+        Node *node = new_node(ND_DEREFERENCE, NULL, rhs_node);
+        return node;
+    }
+
+    if (get_token(pos)->ty == '&') {
+        // リファレンス演算子
+        // 中の構文を右辺値としてコンパイルする
+        pos++;
+        Node *rhs_node = unary();
+        Node *node = new_node(ND_REFERENCE, NULL, rhs_node);
+        return node;
+    }
+
+    return term();
 }
 
 // funcを生成 (関数呼び出し)
@@ -208,7 +219,7 @@ Node *func() {
         return node;
     }
 
-    return term();
+    return unary();
 }
 
 // mul を生成 (掛け算, 割り算)
