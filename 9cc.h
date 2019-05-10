@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #define SIZE_OF_ADDRESS (8)
+#define SIZE_OF_INT     (4)
 
 // 可変長ベクタ
 typedef struct {
@@ -35,6 +36,7 @@ enum {
     TK_FOR,         // for 文
     TK_RETURN,      // return 文
     TK_INT,         // int 定義 
+    TK_SIZEOF,      // sizeof 演算子
     TK_EOF,         // 入力の終わりを表すトークン
 };
 
@@ -125,7 +127,9 @@ Variable *new_variable(Type *type, int offset);
 int consume_not_add(int index, int ty);
 int consume(int ty);
 
+int sizeof_node(Node *node);
 Node *term();
+Node *unary();
 Node *func();
 Node *mul();
 Node *add();

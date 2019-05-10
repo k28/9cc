@@ -48,6 +48,7 @@
  * unary: "-" term
  * unary: "&" unary
  * unary: "*" unary
+ * unary: "sizeof" unary
  *
  * argument: equality
  * argument: equality "," equality
@@ -143,6 +144,31 @@ int consume(int ty) {
     return 1;
 }
 
+// Nodeの型を見てsizeofで返す値を決める
+int sizeof_node(Node *node) {
+    if (node == NULL) {
+        error("定義されていないデータ型です:%s", node->name);
+    }
+
+    if (node->ty == ND_NUM) return SIZE_OF_INT;
+
+    if (node->ty == ND_IDENT) {
+        // 変数の型を確認する
+        Variable *val_info = map_get(variables, node->name);
+        if (val_info->type->ty == INT) return SIZE_OF_INT;
+        if (val_info->type->ty == PTR) return SIZE_OF_ADDRESS;
+
+        // 多分ここにきたら実装もれ
+        error("定義されていない変数型です:", node->name);
+    }
+
+    if (node->ty == ND_DEREFERENCE) return SIZE_OF_INT;
+    if (node->ty == ND_REFERENCE)   return SIZE_OF_ADDRESS;
+
+    // 計算の場合は左辺の値を採用
+    return sizeof_node(node->lhs);
+}
+
 // termを生成 (括弧)
 Node *term() {
     if (consume('(')) {
@@ -205,6 +231,14 @@ Node *unary() {
         Node *rhs_node = unary();
         Node *node = new_node(ND_REFERENCE, NULL, rhs_node);
         return node;
+    }
+
+    if (consume(TK_SIZEOF)) {
+        // sizeof演算子
+        Node *node = unary();
+        // Nodeの型を見て、値を数値に置き換える
+        int size = sizeof_node(node);
+        return new_node_num(size);
     }
 
     return term();
@@ -725,6 +759,15 @@ void tokenize(char *p) {
             vec_push(vec, token);
             i++;
             p += 3;
+            continue;
+        }
+
+        // sizeof
+        if (strncmp(p, "sizeof", 6) == 0) {
+            Token *token = new_token(TK_SIZEOF, p);
+            vec_push(vec, token);
+            i++;
+            p += 6;
             continue;
         }
 
