@@ -144,7 +144,7 @@ Node *for_stmt();
 Node *stmt();
 Vector *def_argument(char *func_name);
 Function *def_function();
-void program();
+void parse();
 
 int is_ident_word(char *p);
 void tokenize(char *p);

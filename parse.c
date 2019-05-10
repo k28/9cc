@@ -667,7 +667,7 @@ Function *def_function() {
     return NULL;
 }
 
-void program() {
+void parse() {
     while(get_token(pos)->ty != TK_EOF) {
         // code[i++] = stmt();
         Function *function = def_function();

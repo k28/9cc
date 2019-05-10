@@ -24,9 +24,10 @@ int main(int argc, char **argv) {
     // 関数定義を入れるVecotr
     functions = new_vector();
 
-    // トークナイズする
+    // トークナイズ
     tokenize(argv[1]);
-    program();
+    // 構文解析
+    parse();
 
     // アセンブリの前半部分を出力
     printf(".intel_syntax noprefix\n");
