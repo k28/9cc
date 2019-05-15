@@ -62,6 +62,7 @@
  * ident: "a" - "z"
  *
  * def_variable: "int" "*"* ident ";"
+ * def_variable: "int" ident "[" num "]" ";"
  *
  * if ( assign ) {
  *     func_body
@@ -511,6 +512,22 @@ Node *def_variable() {
         // 変数
         Node *node = new_node(ND_IDENT, NULL, NULL);
         node->name = name;
+
+        if (consume('[')) {
+            // 配列定義
+            Token *num_token = get_token(pos);
+            if (num_token->ty != TK_NUM) {
+                error("配列の定義が不正です. %s", get_token(pos)->input);
+            }
+            Type *ptr_type = new_type(ARRAY, type);
+            ptr_type->array_size = num_token->val;  // 配列のサイズを設定
+            type = ptr_type;
+            pos++;
+            if (consume(']') == 0) {
+                error("配列の定義が不正です. 閉じ括弧がありません. %s", get_token(pos)->input);
+            }
+        }
+
         // 変数の数を数えるためにMapに値を入れる
         // variablesに登録されていない変数はスタックに積む必要がある
         Variable *val_info = map_get(variables, node->name);

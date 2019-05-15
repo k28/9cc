@@ -84,5 +84,6 @@ try 4   'int main(){int r; int x; int *y; r = sizeof(x + 3); return r;}'
 try 8   'int main(){int r; int x; int *y; r = sizeof(y + 3); return r;}'
 try 4   'int main(){int r; int x; int *y; r = sizeof(*y); return r;}'
 try 5   'int main(){int r; int x; int *y; r = sizeof(*y) + 1; return r;}'
+try 5   'int main(){int a[10]; return 5;}'
 
 echo OK
