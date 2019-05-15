@@ -31,6 +31,13 @@ Map *new_map() {
 
 // Mapに値を追加する
 void map_put(Map *map, char *key, void *val) {
+    for (int i =  map->keys->len - 1; i >= 0; i--) {
+        if (strcmp(key, map->keys->data[i]) == 0) {
+            map->vals->data[i] = val;
+            return;
+        }
+    }
+
     vec_push(map->keys, key);
     vec_push(map->vals, val);
 }
@@ -43,6 +50,20 @@ void *map_get(Map *map, char *key) {
     }
 
     return NULL;
+}
+
+// Mapのindex番目の要素を返す
+void *map_get_at_index(Map *map, int index) {
+    if (index < map->vals->len) {
+        return map->vals->data[index];
+    }
+
+    return NULL;
+}
+
+// Mapのサイズを返す
+int get_map_size(Map *map) {
+    return map->vals->len;
 }
 
 Type *new_type(int ty, Type *ptrof) {
@@ -104,6 +125,13 @@ void test_map() {
     
     map_put(map, "foo", (void *)6);
     expect(__LINE__, 6, (intptr_t)map_get(map, "foo"));
+
+    expect(__LINE__, 6, (intptr_t)map_get_at_index(map, 0));
+    expect(__LINE__, 4, (intptr_t)map_get_at_index(map, 1));
+
+    expect(__LINE__, 2, get_map_size(map));
+    map_put(map, "hoge", (void *)6);
+    expect(__LINE__, 3, get_map_size(map));
 
     printf("test_map OK\n");
 }
