@@ -331,7 +331,19 @@ void gen_function(Function *function) {
     // 関数呼び出しをする際にはRSPが16の倍数になっている必要があるとのこと
     // ココで調整しているけど、正しい?
     // TODO 変数の型によって加算するサイズを変更する必要がある
-    int size_of_variables = function->variables->keys->len * SIZE_OF_ADDRESS;
+
+    // 変数のタイプによって確保するメモリ領域を変更する
+    int size_of_variables = 0;
+    int variable_count = get_map_size(function->variables);
+    for (int i = 0; i < variable_count; i++) {
+        Variable *val_info = map_get_at_index(function->variables, i);
+        if (val_info->type->ty == ARRAY) {
+            size_of_variables += SIZE_OF_INT * val_info->type->array_size;
+        } else {
+            size_of_variables += SIZE_OF_ADDRESS;
+        }
+    }
+
     int rsp_offset = size_of_variables % 16;
     size_of_variables += rsp_offset;
     printf("  push rbp\n");
