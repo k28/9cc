@@ -158,6 +158,7 @@ int sizeof_node(Node *node) {
         Variable *val_info = map_get(variables, node->name);
         if (val_info->type->ty == INT) return SIZE_OF_INT;
         if (val_info->type->ty == PTR) return SIZE_OF_ADDRESS;
+        if (val_info->type->ty == ARRAY) return val_info->type->array_size;
 
         // 多分ここにきたら実装もれ
         error("定義されていない変数型です:", node->name);

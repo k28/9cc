@@ -87,5 +87,6 @@ try 5   'int main(){int r; int x; int *y; r = sizeof(*y) + 1; return r;}'
 try 7   'int main(){int a[10]; int b; b = 7; return b;}'
 try 7   'int main(){int x; int a[10]; int b; x = 7; b = 13; return x;}'
 try 13  'int main(){int x; int a[10]; int b; x = 7; b = 13; return b;}'
+try 10  'int main(){int a[10]; return sizeof(a);}'
 
 echo OK
