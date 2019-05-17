@@ -152,6 +152,8 @@ void parse();
 int is_ident_word(char *p);
 void tokenize(char *p);
 
+int address_offset(Variable *variable, char* name);
+
 void gen_equality(Node *node);
 void gen_lval(Node *node);
 void gen(Node *node);

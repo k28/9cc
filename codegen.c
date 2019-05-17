@@ -3,6 +3,22 @@
 int    return_label_;        // return文の飛び先ラベル
 int    current_pointer_offset_ = 1;
 
+int address_offset(Variable *variable, char* name) {
+    Type *type = variable->type;
+
+    switch (type->ty) {
+        case INT:
+           return variable->stack_offset * SIZE_OF_ADDRESS;
+        case PTR:
+           return variable->stack_offset * SIZE_OF_ADDRESS;
+        case ARRAY:
+           return variable->stack_offset * SIZE_OF_ADDRESS;
+    }
+
+    error("不明な変数型です。 %s", name);
+    return SIZE_OF_ADDRESS;
+}
+
 // 等値の対応
 void gen_equality(Node *node) {
     //
@@ -35,7 +51,8 @@ void gen_lval(Node *node) {
 
     // variablesには変数の型とスタックオフセットが入っている
     Variable *val_info = map_get(variables, node->name);
-    int offset = val_info->stack_offset * SIZE_OF_ADDRESS;
+    //int offset = val_info->stack_offset * SIZE_OF_ADDRESS;
+    int offset = address_offset(val_info, node->name);
     printf("  mov rax, rbp\n");
     printf("  sub rax, %d\n", offset);
     printf("  push rax\n");
@@ -153,7 +170,7 @@ void gen(Node *node) {
             if (val_info->type->ty == PTR && val_info->type->ptrof->ty == INT) {
                 // INTへのポインター
                 // TODO INTのポインターサイズにする必要がある
-                current_pointer_offset_ = 4;
+                current_pointer_offset_ = SIZE_OF_INT;
             }
             if (val_info->type->ty == PTR && val_info->type->ptrof->ty == PTR) {
                 // ポインターへのポインター
@@ -291,7 +308,8 @@ void gen_function_variables(Function *function) {
     for (int i = 0; i < function->arguments->len; i++) {
         Node *argnode = function->arguments->data[i];
         Variable *val_info = map_get(function->variables, argnode->name);
-        int offset = val_info->stack_offset * SIZE_OF_ADDRESS;
+        //int offset = val_info->stack_offset * SIZE_OF_ADDRESS;
+        int offset = address_offset(val_info, argnode->name);
         printf("  mov rax, rbp\n");
         printf("  sub rax, %d\n", offset);
         switch(i + 1) {
@@ -339,7 +357,9 @@ void gen_function(Function *function) {
         Variable *val_info = map_get_at_index(function->variables, i);
         if (val_info->type->ty == ARRAY) {
             size_of_variables += SIZE_OF_INT * val_info->type->array_size;
-        } else {
+        } else if (val_info->type->ty == INT) {
+            size_of_variables += SIZE_OF_ADDRESS;
+        } else if (val_info->type->ty == PTR) {
             size_of_variables += SIZE_OF_ADDRESS;
         }
     }
