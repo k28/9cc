@@ -114,9 +114,16 @@ void gen(Node *node) {
         // 引数をレジスタにセット
         gen_arguments(node->name, node->val);
 
+        // 現在のrspをrbxに保存(後から元に戻す)
+        printf("  mov rbx, rsp\n");
+        // rspを16バイトの倍数に調整
+        printf("  and rsp, ~0x0f\n");
+
         // 関数名を指定して実行
         printf("  call %s\n", node->name);
-        // 結果をスタックに入れる
+
+        // rspを元に戻して、結果をスタックにプッシュ
+        printf("  mov rsp, rbx\n");
         printf("  push rax\n");
         return;
     }
@@ -346,8 +353,6 @@ void gen_function(Function *function) {
 
     // プロローグ
     // 変数の数分の領域を確保する
-    // 関数呼び出しをする際にはRSPが16の倍数になっている必要があるとのこと
-    // ココで調整しているけど、正しい?
     // TODO 変数の型によって加算するサイズを変更する必要がある
 
     // 変数のタイプによって確保するメモリ領域を変更する
@@ -364,6 +369,7 @@ void gen_function(Function *function) {
         }
     }
 
+    // RSPを16の倍数になるように調整
     int rsp_offset = size_of_variables % 16;
     size_of_variables += rsp_offset;
     printf("  push rbp\n");
