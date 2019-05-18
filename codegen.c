@@ -3,6 +3,23 @@
 int    return_label_;        // return文の飛び先ラベル
 int    current_pointer_offset_ = 1;
 
+int size_of_variale(Variable *variable) {
+    Type *type = variable->type;
+
+    switch (type->ty) {
+        case INT:
+           return SIZE_OF_ADDRESS;
+        case PTR:
+           return SIZE_OF_ADDRESS;
+        case ARRAY:
+           // TODO 配列の型を見る必要がある
+           return type->array_size * SIZE_OF_INT;
+    }
+
+    error("不明な変数型です.", "");
+    return 0;
+}
+
 int address_offset(Variable *variable, char* name) {
     Type *type = variable->type;
 
@@ -360,13 +377,7 @@ void gen_function(Function *function) {
     int variable_count = get_map_size(function->variables);
     for (int i = 0; i < variable_count; i++) {
         Variable *val_info = map_get_at_index(function->variables, i);
-        if (val_info->type->ty == ARRAY) {
-            size_of_variables += SIZE_OF_INT * val_info->type->array_size;
-        } else if (val_info->type->ty == INT) {
-            size_of_variables += SIZE_OF_ADDRESS;
-        } else if (val_info->type->ty == PTR) {
-            size_of_variables += SIZE_OF_ADDRESS;
-        }
+        size_of_variables += size_of_variale(val_info);
     }
 
     // RSPを16の倍数になるように調整
