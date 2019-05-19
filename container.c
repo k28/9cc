@@ -43,8 +43,9 @@ void map_put(Map *map, char *key, void *val) {
 }
 
 void *map_get(Map *map, char *key) {
+    if (key == NULL) return NULL;
     for (int i =  map->keys->len - 1; i >= 0; i--) {
-        if (strcmp(key, map->keys->data[i]) == 0) {
+        if (strcmp(map->keys->data[i], key) == 0) {
             return map->vals->data[i];
         }
     }

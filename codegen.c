@@ -8,7 +8,7 @@ int size_of_variale(Variable *variable) {
 
     switch (type->ty) {
         case INT:
-           return SIZE_OF_ADDRESS;
+           return SIZE_OF_INT;
         case PTR:
            return SIZE_OF_ADDRESS;
         case ARRAY:
@@ -21,19 +21,7 @@ int size_of_variale(Variable *variable) {
 }
 
 int address_offset(Variable *variable, char* name) {
-    Type *type = variable->type;
-
-    switch (type->ty) {
-        case INT:
-           return variable->stack_offset * SIZE_OF_ADDRESS;
-        case PTR:
-           return variable->stack_offset * SIZE_OF_ADDRESS;
-        case ARRAY:
-           return variable->stack_offset * SIZE_OF_ADDRESS;
-    }
-
-    error("不明な変数型です。 %s", name);
-    return SIZE_OF_ADDRESS;
+    return variable->stack_offset;
 }
 
 // 等値の対応
@@ -68,7 +56,6 @@ void gen_lval(Node *node) {
 
     // variablesには変数の型とスタックオフセットが入っている
     Variable *val_info = map_get(variables, node->name);
-    //int offset = val_info->stack_offset * SIZE_OF_ADDRESS;
     int offset = address_offset(val_info, node->name);
     printf("  mov rax, rbp\n");
     printf("  sub rax, %d\n", offset);
@@ -155,7 +142,17 @@ void gen(Node *node) {
     if (node->ty == ND_IDENT) {
         gen_lval(node);
         printf("  pop rax\n");
-        printf("  mov rax, [rax]\n");
+
+        Variable *val_info = map_get(variables, node->name);
+        if (val_info->type->ty == INT) {
+            printf("  mov eax, DWORD PTR [rax]\n");
+            printf("  and rax, 0xFFFF\n");
+        } else if (val_info->type->ty == PTR) {
+            printf("  mov rax, [rax]\n");
+        } else if (val_info->type->ty == ARRAY) {
+            // TODO 型を見る必要がある
+            printf("  mov eax, [rax]\n");
+        }
         printf("  push rax\n");
         return;
     }
@@ -166,8 +163,10 @@ void gen(Node *node) {
         gen(node->rhs);
         // 変数のアドレスが示すものをスタックに入れる
         printf("  pop rax\n");
-        printf("  mov rax, [rax]\n");
+        printf("  mov eax, DWORD PTR [rax]\n");
+        printf("  and rax, 0xFFFF\n");
         printf("  push rax\n");
+
         return;
     }
 
@@ -185,8 +184,8 @@ void gen(Node *node) {
         gen_lval(node->lhs);
 
         // 変数の場合は、ポインター演算か確認する
+        Variable *val_info = map_get(variables, node->lhs->name);
         if (node->lhs->ty == ND_IDENT) {
-            Variable *val_info = map_get(variables, node->lhs->name);
             if (val_info->type->ty == INT) {
                 // INTの変数
                 current_pointer_offset_ = 1;
@@ -205,7 +204,13 @@ void gen(Node *node) {
         gen(node->rhs);
         printf("  pop rdi\n");
         printf("  pop rax\n");
-        printf("  mov [rax], rdi\n");
+        if (val_info == NULL || val_info->type->ty == INT) {
+            printf("  and rdi, 0xFFFF\n");
+            printf("  mov DWORD PTR [rax], edi\n");
+        } else {
+            // ポインターへの代入
+            printf("  mov [rax], rdi\n");
+        }
         printf("  push rdi\n");
         return;
     }
@@ -332,28 +337,51 @@ void gen_function_variables(Function *function) {
     for (int i = 0; i < function->arguments->len; i++) {
         Node *argnode = function->arguments->data[i];
         Variable *val_info = map_get(function->variables, argnode->name);
-        //int offset = val_info->stack_offset * SIZE_OF_ADDRESS;
         int offset = address_offset(val_info, argnode->name);
         printf("  mov rax, rbp\n");
         printf("  sub rax, %d\n", offset);
         switch(i + 1) {
             case 1:
-                printf("  mov [rax], rdi\n");
+                if (val_info->type->ty == INT) {
+                    printf("  mov DWORD PTR [rax], edi\n");
+                } else {
+                    printf("  mov [rax], rdi\n");
+                }
                 break;
             case 2:
-                printf("  mov [rax], rsi\n");
+                if (val_info->type->ty == INT) {
+                    printf("  mov DWORD PTR [rax], esi\n");
+                } else {
+                    printf("  mov [rax], rsi\n");
+                }
                 break;
             case 3:
-                printf("  mov [rax], rdx\n");
+                if (val_info->type->ty == INT) {
+                    printf("  mov DWORD PTR [rax], edx\n");
+                } else {
+                    printf("  mov [rax], rdx\n");
+                }
                 break;
             case 4:
-                printf("  mov [rax], rcx\n");
+                if (val_info->type->ty == INT) {
+                    printf("  mov DWORD PTR [rax], ecx\n");
+                } else {
+                    printf("  mov [rax], rcx\n");
+                }
                 break;
             case 5:
-                printf("  mov [rax], r8\n");
+                if (val_info->type->ty == INT) {
+                    printf("  mov DWORD PTR [rax], r8d\n");
+                } else {
+                    printf("  mov [rax], r8\n");
+                }
                 break;
             case 6:
-                printf("  mov [rax], r9\n");
+                if (val_info->type->ty == INT) {
+                    printf("  mov DWORD PTR [rax], r9d\n");
+                } else {
+                    printf("  mov [rax], r9\n");
+                }
                 break;
         }
     }
@@ -373,11 +401,12 @@ void gen_function(Function *function) {
     // TODO 変数の型によって加算するサイズを変更する必要がある
 
     // 変数のタイプによって確保するメモリ領域を変更する
-    int size_of_variables = 0;
+    int size_of_variables = 8;  // オフセットを入れると関数呼び出しが成功する
     int variable_count = get_map_size(function->variables);
     for (int i = 0; i < variable_count; i++) {
         Variable *val_info = map_get_at_index(function->variables, i);
         size_of_variables += size_of_variale(val_info);
+        val_info->stack_offset = size_of_variables;
     }
 
     // RSPを16の倍数になるように調整
@@ -403,7 +432,7 @@ void gen_function(Function *function) {
     printf(".Lreturn%03d:\n",function->label);
 
     // エピローグ
-    // 最後の式の結果がRAXに残っているのでそれが帰り値になる
+    // 最後の式の結果がRAXに残っているのでそれが返り値になる
     printf("  mov rsp, rbp\n");
     printf("  pop rbp\n");
     printf("  ret\n");
