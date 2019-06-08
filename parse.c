@@ -43,12 +43,7 @@
  * func: ident "(" argument ")"
  * func: unary
  *
- * unary: term
- * unary: "+" term
- * unary: "-" term
- * unary: "&" unary
- * unary: "*" unary
- * unary: "sizeof" unary
+ * unary: ("sizeof") unary | ("+" | "-")? term
  *
  * argument: equality
  * argument: equality "," equality
@@ -56,6 +51,8 @@
  *
  * term: num
  * term: ident
+ * term: "&" term
+ * term: "*" term
  * term: "(" assign ")"
  *
  * digit: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
@@ -182,6 +179,24 @@ Node *term() {
        return node;
     }
 
+    if (get_token(pos)->ty == '*') {
+        // デリファレンス演算子
+        // 中の構文を右辺値としてコンパイルする
+        pos++;
+        Node *rhs_node = term();
+        Node *node = new_node(ND_DEREFERENCE, NULL, rhs_node);
+        return node;
+    }
+
+    if (get_token(pos)->ty == '&') {
+        // リファレンス演算子
+        // 中の構文を右辺値としてコンパイルする
+        pos++;
+        Node *rhs_node = term();
+        Node *node = new_node(ND_REFERENCE, NULL, rhs_node);
+        return node;
+    }
+
     if (get_token(pos)->ty == TK_NUM) {
         return new_node_num(get_token(pos++)->val);
     }
@@ -215,24 +230,6 @@ Node *unary() {
     if (consume('-')) {
         // -x を 0 - x に置き換え
         return new_node('-', new_node_num(0), term());
-    }
-
-    if (get_token(pos)->ty == '*') {
-        // デリファレンス演算子
-        // 中の構文を右辺値としてコンパイルする
-        pos++;
-        Node *rhs_node = unary();
-        Node *node = new_node(ND_DEREFERENCE, NULL, rhs_node);
-        return node;
-    }
-
-    if (get_token(pos)->ty == '&') {
-        // リファレンス演算子
-        // 中の構文を右辺値としてコンパイルする
-        pos++;
-        Node *rhs_node = unary();
-        Node *node = new_node(ND_REFERENCE, NULL, rhs_node);
-        return node;
     }
 
     if (consume(TK_SIZEOF)) {

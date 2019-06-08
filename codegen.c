@@ -60,7 +60,6 @@ void gen_lval(Node *node) {
     printf("  mov rax, rbp\n");
     printf("  sub rax, %d\n", offset);
     printf("  push rax\n");
-
 }
 
 // 引数をレジスタにセットする
