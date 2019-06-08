@@ -28,6 +28,8 @@ int main(int argc, char **argv) {
     tokenize(argv[1]);
     // 構文解析
     parse();
+    // 値の調整
+    sema();
 
     // アセンブリの前半部分を出力
     printf(".intel_syntax noprefix\n");

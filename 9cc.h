@@ -162,6 +162,11 @@ void gen_function_variables(Function *function);
 void gen_function(Function *function);
 void error(char *message, char *s);
 
+// sema
+int offset_of_variable(Variable *val_info);
+void walk(Node *node);
+void sema();
+
 // テスト用のコード
 void expect(int line, int expected, int actual);
 void test_vector();

@@ -1,7 +1,6 @@
 #include "9cc.h"
 
 int    return_label_;        // return文の飛び先ラベル
-int    current_pointer_offset_ = 1;
 
 int size_of_variale(Variable *variable) {
     Type *type = variable->type;
@@ -104,7 +103,7 @@ void gen_arguments(char *func_name, int arg_count) {
 void gen(Node *node) {
 
     if (node->ty == ND_NUM) {
-        printf("  push %d\n", node->val * current_pointer_offset_);
+        printf("  push %d\n", node->val);
         return;
     }
 
@@ -152,11 +151,13 @@ void gen(Node *node) {
             // TODO 型を見る必要がある
             printf("  mov eax, [rax]\n");
         }
+
         printf("  push rax\n");
         return;
     }
 
     if (node->ty == ND_DEREFERENCE) {
+        printf("# ND_DEREFERENCE\n");
         // デリファレンス演算子(*)が、左辺値として定義された場合
         // 右辺値をそのままコンパイルする
         gen(node->rhs);
@@ -176,6 +177,7 @@ void gen(Node *node) {
     }
 
     if (node->ty == ND_ASSIGN) {
+        printf("# ND_ASSIGN\n");
         // assignの時には
         // 左の変数に右の値を入れる
         // 左の変数をgen_lvalでスタックに入れておいてから
@@ -184,21 +186,6 @@ void gen(Node *node) {
 
         // 変数の場合は、ポインター演算か確認する
         Variable *val_info = map_get(variables, node->lhs->name);
-        if (node->lhs->ty == ND_IDENT) {
-            if (val_info->type->ty == INT) {
-                // INTの変数
-                current_pointer_offset_ = 1;
-            }
-            if (val_info->type->ty == PTR && val_info->type->ptrof->ty == INT) {
-                // INTへのポインター
-                // TODO INTのポインターサイズにする必要がある
-                current_pointer_offset_ = SIZE_OF_INT;
-            }
-            if (val_info->type->ty == PTR && val_info->type->ptrof->ty == PTR) {
-                // ポインターへのポインター
-                current_pointer_offset_ = SIZE_OF_ADDRESS;
-            }
-        }
 
         gen(node->rhs);
         printf("  pop rdi\n");
@@ -397,8 +384,6 @@ void gen_function(Function *function) {
 
     // プロローグ
     // 変数の数分の領域を確保する
-    // TODO 変数の型によって加算するサイズを変更する必要がある
-
     // 変数のタイプによって確保するメモリ領域を変更する
     int size_of_variables = 8;  // オフセットを入れると関数呼び出しが成功する
     int variable_count = get_map_size(function->variables);
@@ -420,7 +405,6 @@ void gen_function(Function *function) {
 
     // コード生成
     for (int i = 0; i < function->code->len; i++) {
-        current_pointer_offset_ = 1;
         gen(function->code->data[i]);
         // 式の評価結果としてスタックに1つの値が残っているはずなので
         // スタックが溢れないようにポップしておく
