@@ -43,11 +43,8 @@ void walk(Node *node) {
                 current_pointer_offset_ = offset_of_variable(val_info);
                 walk(node->rhs);
                 current_pointer_offset_ = before_offset;
-            } else {
-                walk(node->lhs);
-                walk(node->rhs);
-            }
-            return;
+                return;
+            } 
     }
 
     walk(node->lhs);
