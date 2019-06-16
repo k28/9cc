@@ -148,8 +148,7 @@ void gen(Node *node) {
         } else if (val_info->type->ty == PTR) {
             printf("  mov rax, [rax]\n");
         } else if (val_info->type->ty == ARRAY) {
-            // TODO 型を見る必要がある
-            printf("  mov eax, [rax]\n");
+            // 配列の時は、アドレスをそのまま返す
         }
 
         printf("  push rax\n");

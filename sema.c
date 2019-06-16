@@ -15,6 +15,10 @@ int offset_of_variable(Variable *val_info) {
         // ポインターへのポインター
         return SIZE_OF_ADDRESS;
     }
+    if (val_info->type->ty == ARRAY && val_info->type->ptrof->ty == INT) {
+        // INT 配列へのポインター
+        return SIZE_OF_INT;
+    }
 
     // ここに来たら対応不足
     error("不明な変数型です.", "");
@@ -34,11 +38,15 @@ void walk(Node *node) {
             // 左のNodeの値が変数の場合、+,-の計算の際にオフセットを設定する
             // その後数値が出てきた時には、値にオフセットを掛ける
             if (node->lhs->ty == ND_IDENT) {
+                int before_offset = current_pointer_offset_;
                 Variable *val_info = map_get(variables, node->lhs->name);
                 current_pointer_offset_ = offset_of_variable(val_info);
                 walk(node->rhs);
+                current_pointer_offset_ = before_offset;
+            } else {
+                walk(node->lhs);
+                walk(node->rhs);
             }
-
             return;
     }
 

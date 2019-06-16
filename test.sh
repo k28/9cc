@@ -111,5 +111,7 @@ try 7   'int main(){int a[10]; int b; b = 7; return b;}'
 try 7   'int main(){int x; int a[10]; int b; x = 7; b = 13; return x;}'
 try 13  'int main(){int x; int a[10]; int b; x = 7; b = 13; return b;}'
 try 10  'int main(){int a[10]; return sizeof(a);}'
+try 1   'int main(){int a[2]; *a = 1; int *p; p = a; return *p;}'
+try 3   'int main(){int a[2]; *a = 1; *(a + 1) = 2; int *p; p = a; return *p + *(p + 1);}'
 
 echo OK
