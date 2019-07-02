@@ -43,7 +43,7 @@
  * func: ident "(" argument ")"
  * func: unary
  *
- * unary: ("sizeof") unary | ("+" | "-")? term
+ * unary: ("sizeof") unary | ("+" | "-")? term | term "[" assign "]"
  *
  * argument: equality
  * argument: equality "," equality
@@ -238,6 +238,22 @@ Node *unary() {
         // Nodeの型を見て、値を数値に置き換える
         int size = sizeof_node(node);
         return new_node_num(size);
+    }
+
+    if ((get_token(pos)->ty == TK_NUM || get_token(pos)->ty == TK_IDENT)
+        && get_token(pos+1)->ty == '[') {
+        //  配列の添字は以下のように変換する
+        //  x[y] => *(x + y)
+        Node *first = term();
+        pos++;
+        Node *second = assign();
+        if(!consume(']')) {
+            error("配列の添字の定義が不正です: %s", get_token(pos)->input);
+        }
+
+        Node *add_node = new_node('+', first, second);
+        Node *node = new_node(ND_DEREFERENCE, NULL, add_node);
+        return node;
     }
 
     return term();

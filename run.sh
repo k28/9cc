@@ -1,7 +1,8 @@
 #!/bin/bash
 
-test_code='int main(){int a[2]; *a = 5; int *p; p = a; return *p;}'
-test_code='int main(){int a[2]; *a = 1; *(a + 1) = 2; int *p; p = a; return *p + *(p + 1);}'
+test_code='int main(){int a[2]; *a = 1; a[1] = 2; return a[1];}'
+##test_code='int main(){int a[2]; *a = 5; int *p; p = a; return *p;}'
+##test_code='int main(){int a[2]; *a = 1; *(a + 1) = 2; int *p; p = a; return *p + *(p + 1);}'
 #test_code='int main(){int a[2]; *a = 1; *(a + 1) = 2; int *p; p = a; return *(p + 1);}'
 #test_code='int main(){int a[2]; *(a + 1) = 5; int *p; p = a; return *(p + 1);}'
 #test_code='int main(){int a[3]; *(a + 2) = 1; return *(a + 2);}'
