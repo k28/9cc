@@ -44,7 +44,16 @@ void walk(Node *node) {
                 walk(node->rhs);
                 current_pointer_offset_ = before_offset;
                 return;
-            } 
+            } else if (node->rhs->ty == ND_IDENT) {
+                // 右のNodeの値が変数の場合は上記のパターンの逆
+                // 3[a] -> *(3 + a) みたいなパターンに対応するため
+                int before_offset = current_pointer_offset_;
+                Variable *val_info = map_get(variables, node->rhs->name);
+                current_pointer_offset_ = offset_of_variable(val_info);
+                walk(node->lhs);
+                current_pointer_offset_ = before_offset;
+                return;
+            }
     }
 
     walk(node->lhs);

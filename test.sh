@@ -115,7 +115,7 @@ try 1   'int main(){int a[2]; *a = 1; int *p; p = a; return *p;}'
 try 3   'int main(){int a[2]; *a = 1; *(a + 1) = 2; int *p; p = a; return *p + *(p + 1);}'
 try 2   'int main(){int a[2]; *a = 1; a[1] = 2; return a[1];}'
 try 3   'int main(){int a[2]; *a = 1; a[1] = 2; return *a + a[1];}'
-#try 7   'int main(){int a[5]; a[3] = 7; return 3[a];}'
+try 7   'int main(){int a[5]; a[3] = 7; return 3[a];}'
 try 10  'int main(){int a[2]; *a = 1; a[1] = 7; a[0] = 3; return a[0] + a[1];}'
 
 echo OK
