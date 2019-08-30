@@ -300,13 +300,14 @@ void gen(Node *node) {
             break;
         case '*':
             // x86-64ではmulは暗黙のうちにRAXを取って引数のレジスタの値にかけてRAXにセットする
-            printf("  mul rdi\n");
+            printf("  imul rdi\n");
             break;
         case '/':
             // divは暗黙のうちにRDX, RAXを取ってそれを連結した物を128bit整数とみなして
-            // それを引数のレジスタの64ビットの値で割ってRAXにセットする
-            printf("  mov rdx, 0\n");
-            printf("  div rdi\n");
+            // それを引数のレジスタの64ビットの値で割って商をRAXに, 余りをRDXにセットする
+            // cqoをcallするとRAXに入っている64ビットの値を128ビットに伸ばしてRDA, RAXにセットすることができる
+            printf("  cqo\n");
+            printf("  idiv rdi\n");
             break;
     }
 
