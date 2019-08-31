@@ -28,9 +28,15 @@
  * assign: equality
  * assign: equality "=" assign
  *
- * equality: add
- * equality: add "==" equality
- * equality: add "!=" equality
+ * equality: relational
+ * equality: relational "==" equality
+ * equality: relational "!=" equality
+ *
+ * relational: add
+ * relational: "<"  add
+ * relational: "<=" add
+ * relational: ">"  add
+ * relational: ">=" add
  *
  * add: mul
  * add: add "+" mul
@@ -311,14 +317,29 @@ Node *add() {
     }
 }
 
+// 大小比較
+Node *relational() {
+    Node *node = add();
+
+    for (;;) {
+        if (get_token(pos)->ty == TK_RELATIONAL) {
+            char *name = get_token(pos++)->input;
+            node = new_node(ND_RELATIONAL, node, add());
+            node->name = name;
+        } else {
+            return node;
+        }
+    }
+}
+
 // 等値
 Node *equality() {
-    Node *node = add();
+    Node *node = relational();
 
     for (;;) {
         if (get_token(pos)->ty == TK_EQUALITY) {
             char *name = get_token(pos++)->input;
-            node = new_node(ND_EQUALITY, node, add());
+            node = new_node(ND_EQUALITY, node, relational());
             node->name = name;
         } else {
             return node;

@@ -23,6 +23,25 @@ int address_offset(Variable *variable, char* name) {
     return variable->stack_offset;
 }
 
+// 大小比較
+void gen_relational(Node *node) {
+    // rdi, raxに比較対象の値が入っている状態でCallされる
+    printf("  cmp rdi, rax\n");
+    if (       strcmp("<",  node->name) == 0) {
+        printf("  setg al\n");
+    } else if (strcmp("<=", node->name) == 0) {
+        printf("  setge al\n");
+    } else if (strcmp(">",  node->name) == 0) {
+        printf("  setl al\n");
+    } else if (strcmp(">=", node->name) == 0) {
+        printf("  setle al\n");
+    } else {
+        error("不正な大小比較です.",node->name);
+    }
+
+    printf("  movzb rax, al\n");
+}
+
 // 等値の対応
 void gen_equality(Node *node) {
     //
@@ -288,6 +307,10 @@ void gen(Node *node) {
     printf("  pop rax\n");
 
     switch (node->ty) {
+        case ND_RELATIONAL:
+            // 大小比較
+            gen_relational(node);
+            break;
         case ND_EQUALITY:
             // 等値の比較を行う
             gen_equality(node);

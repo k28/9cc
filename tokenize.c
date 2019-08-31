@@ -113,6 +113,23 @@ void tokenize(char *p) {
             continue;
         }
 
+        // 大小比較 (< <= > >=)
+        if ((*p =='<') || (*p == '>')) {
+            int relational_name_size = 1;
+            if (*(p+1) == '=') {
+                relational_name_size++;
+            }
+            char *relational_name = malloc(relational_name_size + 1);
+            memset(relational_name, 0, relational_name_size + 1);
+            strncpy(relational_name, p, relational_name_size);
+            Token *token = new_token(TK_RELATIONAL, relational_name);
+            vec_push(vec, token);
+
+            i++;
+            p += relational_name_size;
+            continue;
+        }
+
         // 等値
         if ((*p == '=' && *(p+1) == '=') ||
             (*p == '!' && *(p+1) == '=') ) {

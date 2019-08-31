@@ -25,6 +25,7 @@ typedef struct {
 enum {
     TK_NUM = 256,   // 整数トークン
     TK_IDENT,       // 識別子
+    TK_RELATIONAL,  // 大小比較
     TK_EQUALITY,    // 等値
     TK_ASSIGN,      // 代入 (=)
     TK_COMMA,       // カンマ
@@ -54,6 +55,7 @@ enum {
     ND_ARGUMENT,    // 関数の引数
     ND_ASSIGN,      // =
     ND_DEF_ARGUMENT,// 関数の引数定義
+    ND_RELATIONAL,  // 大小比較
     ND_EQUALITY,    // 等値
     ND_IF,          // if文
     ND_WHILE,       // while文
@@ -136,6 +138,7 @@ Node *unary();
 Node *func();
 Node *mul();
 Node *add();
+Node *relational();
 Node *equality();
 Vector *func_body();
 Node *argument(int *count_of_arguments);
@@ -155,6 +158,7 @@ void tokenize(char *p);
 int size_of_variale(Variable *variable);
 int address_offset(Variable *variable, char* name);
 
+void gen_relational(Node *node);
 void gen_equality(Node *node);
 void gen_lval(Node *node);
 void gen(Node *node);
