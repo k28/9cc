@@ -219,6 +219,15 @@ void gen(Node *node) {
         return;
     }
 
+    if (node->ty == ND_BLOCK) {
+        // programに入っているコードを順に生成
+        for (int i = 0; i < node->program->len; i++) {
+            gen(node->program->data[i]);
+        }
+
+        return;
+    }
+
     if (node->ty == ND_IF) {
         // ifの時には、左辺を評価してから、結果を確認し
         // ラベルを作成する

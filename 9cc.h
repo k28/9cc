@@ -63,6 +63,7 @@ enum {
     ND_RETURN,      // return文
     ND_DEREFERENCE, // デリファレンス演算子
     ND_REFERENCE,   // リファレンス演算子 (&)
+    ND_BLOCK,       // ブロック
 };
 
 typedef struct Node {

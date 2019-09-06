@@ -128,5 +128,8 @@ try 0   'int main(){3 <= 2;}'
 try 1   'int main(){1 >= 0;}'
 try 1   'int main(){1 >= 1;}'
 try 0   'int main(){0 >= 1;}'
+try 7   'int main(){ int a; {a = 7; int b; b = 2;} return a;}'
+try 8   'int main(){ int a; {a = 5; int b; b = 1; {a = a + b;}} {a = a + 2;} return a;}'
+try 7   'int main(){ int a; {a = 5; int b; b = 1; if(0){a = a + b;}} {a = a + 2;} return a;}'
 
 echo OK

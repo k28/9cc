@@ -587,7 +587,25 @@ Node *def_variable() {
     return NULL;
 }
 
+// block分のNodeを生成
+Node *blockstmt() {
+    Vector *body_vec = func_body();
+    if (!consume(TK_RCBACKET)) {
+        error("if文の終わりが不正です. \"}\"でありません: %s", get_token(pos)->input);
+    }
+
+    Node *node = new_node(ND_BLOCK, NULL, NULL);
+    node->program = body_vec;
+
+    return node;
+}
+
 Node *stmt() {
+    if (consume(TK_LCBACKET)) {
+        // ブロック { .. }
+        return blockstmt();
+    }
+
     if (consume(TK_IF)) {
         // if文
         return ifstmt();

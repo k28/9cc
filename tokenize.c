@@ -68,6 +68,9 @@ void tokenize(char *p) {
         }
 
         // return 文
+        // TODO returnxなども許されてしまうので
+        // returnのあとの文字がトークンを表す文字で無いことを確認する必要がある
+        // (他の比較においても同様の事が言える)
         if (strncmp(p, "return", 6) == 0) {
             Token *token = new_token(TK_RETURN, p);
             vec_push(vec, token);
