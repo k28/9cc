@@ -49,6 +49,15 @@ void tokenize(char *p) {
             continue;
         }
 
+        // else 文
+        if (strncmp(p, "else", 4) == 0) {
+            Token *token = new_token(TK_ELSE, p);
+            vec_push(vec, token);
+            i++;
+            p += 4; // 4文字分進める
+            continue;
+        }
+
         // while 文
         if (strncmp(p, "while", 5) == 0) {
             Token *token = new_token(TK_WHILE, p);

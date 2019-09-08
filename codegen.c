@@ -234,9 +234,15 @@ void gen(Node *node) {
         gen(node->lhs);
         printf("  pop rax\n");
         printf("  cmp rax, 0\n");
-        printf("  je  .Lend%03d\n",node->label);
+        printf("  je  .Lelse%03d\n",node->label);
         for (int i = 0; i < node->program->len; i++) {
             gen(node->program->data[i]);
+        }
+        printf("  je  .Lend%03d\n",node->label);
+
+        printf(".Lelse%03d:\n",node->label);
+        if (node->rhs) {
+            gen(node->rhs);
         }
 
         // ジャンプ先を定義

@@ -395,7 +395,8 @@ Node *ifstmt() {
     }
 
     // 条件式
-    Node *condition_node = equality();
+    // TODO while, forなどでもexprを使った方が良い
+    Node *condition_node = expr();
 
     if (!consume(')')) {
         error("if文の閉じ括弧がありません. :%s", get_token(pos)->input);
@@ -420,8 +421,14 @@ Node *ifstmt() {
         }
     }
 
+    // else 句があるか確認
+    Node *else_node = NULL;
+    if (consume(TK_ELSE)) {
+        else_node = stmt();
+    }
+
     // IFのNodeを作成
-    Node *node = new_node(ND_IF, condition_node, NULL);
+    Node *node = new_node(ND_IF, condition_node, else_node);
     node->program = body_vec;
     node->label = label_++;
 
@@ -600,7 +607,12 @@ Node *blockstmt() {
     return node;
 }
 
+Node *expr() {
+    return assign();
+}
+
 Node *stmt() {
+
     if (consume(TK_LCBACKET)) {
         // ブロック { .. }
         return blockstmt();
@@ -622,8 +634,16 @@ Node *stmt() {
     }
 
     if (consume(TK_INT)) {
+        // 変数定義
         return def_variable();
     }
+
+    // Node *node;
+    // if (consume(TK_RETURN)) {
+    //     node = new_node(ND_RETURN, expr(), NULL);
+    // } else {
+    //     node = expr();
+    // }
 
     // returnを評価
     Node *node = return_node();

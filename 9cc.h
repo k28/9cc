@@ -33,6 +33,7 @@ enum {
     TK_LCBACKET,    // { 開く
     TK_RCBACKET,    // } 閉じる
     TK_IF,          // if 文
+    TK_ELSE,        // else 文
     TK_WHILE,       // while 文
     TK_FOR,         // for 文
     TK_RETURN,      // return 文
@@ -148,6 +149,7 @@ Node *return_node();
 Node *ifstmt();
 Node *while_stmt();
 Node *for_stmt();
+Node *expr();
 Node *stmt();
 Vector *def_argument(char *func_name);
 Function *def_function();
