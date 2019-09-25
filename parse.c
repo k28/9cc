@@ -213,6 +213,14 @@ Node *term() {
         // IDENTの変数定義を取得
         Variable *val_info = map_get(variables, name);
         if (val_info == NULL) {
+            // グローバル変数に定義されているか確認する
+            val_info = map_get(global_variables_, name);
+            if (val_info) {
+                // グローバル変数ノードとして追加
+                Node *node = new_node(ND_GLOBAL_VAL, NULL, NULL);
+                node->name = name;
+                return node;
+            }
             error("定義されていない変数です: %s", name);
         }
 
@@ -718,7 +726,7 @@ Vector *def_argument(char *func_name) {
 
 // 関数定義
 Function *def_function() {
-    if (consume(TK_INT) && get_token(pos)->ty == TK_IDENT && consume_not_add(pos + 1, '(')) {
+    // if (consume(TK_INT) && get_token(pos)->ty == TK_IDENT && consume_not_add(pos + 1, '(')) {
         // 関数名を取得
         char *name = get_token(pos++)->input;
         pos++;  // 前カッコ "(" 分進める
@@ -751,18 +759,66 @@ Function *def_function() {
             error("関数定義に対応する 閉じブランケットがありません: %s", name);
         }
         return function;
+    // }
+
+    // error("関数定義が不正です :%s\n", get_token(pos)->input);
+    // return NULL;
+}
+
+void def_global_variable() {
+    // このデータの型
+    Type *type = new_type(INT, NULL);
+    // *があれば足していく
+    while (consume('*')) {
+        Type *ptr_type = new_type(PTR, type);
+        type = ptr_type;
     }
 
-    error("関数定義が不正です :%s\n", get_token(pos)->input);
-    return NULL;
+    if (get_token(pos)->ty == TK_IDENT) {
+        // 名称を取得しておく
+        char *name = get_token(pos++)->input;
+
+        if (consume('[')) {
+            // 配列定義
+            Token *num_token = get_token(pos);
+            if (num_token->ty != TK_NUM) {
+                error("配列の定義が不正です. %s", get_token(pos)->input);
+            }
+            Type *ptr_type = new_type(ARRAY, type);
+            ptr_type->array_size = num_token->val;  // 配列のサイズを設定
+            type = ptr_type;
+            pos++;
+            if (consume(']') == 0) {
+                error("配列の定義が不正です. 閉じ括弧がありません. %s", get_token(pos)->input);
+            }
+        }
+
+        // グローバル変数はMapに入れる
+        Variable *val_info = new_variable(type, 0);
+        map_put(global_variables_, name, val_info);
+    }
+
+    // 最後はTK_STMT(;)のはず
+    if (!consume(TK_STMT)) {
+        error("変数定義の終わりが不正です. \";\"でありません: %s", get_token(pos)->input);
+    }
 }
 
 void parse() {
     while(get_token(pos)->ty != TK_EOF) {
-        // code[i++] = stmt();
-        Function *function = def_function();
-        if (function) {
-            vec_push(functions, function);
+        if (consume(TK_INT) && get_token(pos)->ty == TK_IDENT) {
+            if (consume_not_add(pos + 1, '(')) {
+                // ( があれば関数定義
+                Function *function = def_function();
+                if (function) {
+                    vec_push(functions, function);
+                }
+            } else {
+                // TODO グローバル変数
+                def_global_variable();
+            }
+        } else {
+            error("関数またはグローバル変数の定義が不正です :%s\n", get_token(pos)->input);
         }
     }
 }

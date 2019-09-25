@@ -1,6 +1,9 @@
 #!/bin/bash
 
-test_code='int main(){int a[2]; *a = 1; a[1] = 2; return a[1];}'
+#test_code='int hoge(){int a; a = 3;} int main(){int a; a = 4; a;}'
+test_code='int x; int main(){ x = 7; return x;}'
+# test_code='int main(){ int *a; *a = 7; return *a;}'
+# test_code='int main(){int a[2]; *a = 1; a[1] = 2; return a[1];}'
 ##test_code='int main(){int a[2]; *a = 5; int *p; p = a; return *p;}'
 ##test_code='int main(){int a[2]; *a = 1; *(a + 1) = 2; int *p; p = a; return *p + *(p + 1);}'
 #test_code='int main(){int a[2]; *a = 1; *(a + 1) = 2; int *p; p = a; return *(p + 1);}'
@@ -12,7 +15,7 @@ test_code='int main(){int a[2]; *a = 1; a[1] = 2; return a[1];}'
 #test_code='int main(){int b; int *a; a = &b; *a = 128; return *a;}'
 #test_code='int main(){int a; a = 1; return a;}'
 
-./9cc "$test_code" > tmp.s
+#./9cc "$test_code" > tmp.s
 gcc -o tmp tmp.s test.o
 ./tmp
 actual="$?"

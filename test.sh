@@ -137,5 +137,6 @@ try 0   'int main(){0 >= 1;}'
 try 7   'int main(){ int a; {a = 7; int b; b = 2;} return a;}'
 try 8   'int main(){ int a; {a = 5; int b; b = 1; {a = a + b;}} {a = a + 2;} return a;}'
 try 7   'int main(){ int a; {a = 5; int b; b = 1; if(0){a = a + b;}} {a = a + 2;} return a;}'
+try 1   "int foo; int bar; int main(){return 1;}"
 
 echo OK

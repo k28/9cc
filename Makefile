@@ -12,6 +12,9 @@ test: 9cc
 	./9cc -test
 	./test.sh
 
+run: 9cc
+	./run.sh
+
 clean:
 	rm -f 9cc *.o *~ tmp*
 

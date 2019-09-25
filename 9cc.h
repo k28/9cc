@@ -52,6 +52,7 @@ typedef struct {
 enum {
     ND_NUM = 256,   // 整数のノードの型
     ND_IDENT,       // 識別子
+    ND_GLOBAL_VAL,  // グローバル変数
     ND_FUNCCALL,    // 関数呼び出し
     ND_ARGUMENT,    // 関数の引数
     ND_ASSIGN,      // =
@@ -102,6 +103,7 @@ typedef struct Variable {
 extern Vector *tokens;
 extern Vector *functions;           // 関数を保持するためのベクター
 extern Map    *variables;           // ローカル変数の種類を保持するためのMap
+extern Map    *global_variables_;   // グローバル変数を保持するMap
 extern int    label_;               // if文などで使用するラベル番号
 extern int    return_label_;        // return文の飛び先ラベル
 extern int    current_pointer_offset_;// 現在のポインタ演算のオフセット(ただの演算の場合は1になる)
@@ -118,6 +120,7 @@ Map *new_map();
 void map_put(Map *map, char *key, void *val);
 void *map_get(Map *map, char *key);
 void *map_get_at_index(Map *map, int index);
+char *map_get_key_at_index(Map *map, int index);
 int get_map_size(Map *map);
 
 Token *new_token(int ty, char *input);

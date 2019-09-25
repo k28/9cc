@@ -63,6 +63,15 @@ void *map_get_at_index(Map *map, int index) {
     return NULL;
 }
 
+// Mapのindex番目のKey要素を返す
+char *map_get_key_at_index(Map *map, int index) {
+    if (index < map->vals->len) {
+        return map->keys->data[index];
+    }
+
+    return NULL;
+}
+
 // Mapのサイズを返す
 int get_map_size(Map *map) {
     return map->vals->len;

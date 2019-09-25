@@ -68,6 +68,15 @@ void gen_lval(Node *node) {
         return;
     }
 
+    if (node->ty == ND_GLOBAL_VAL) {
+        // グローバル変数の値を入れる
+        Variable *val_info = map_get(global_variables_, node->name);
+        // TODO 他の型, 配列に対応するでも対応できるようにする
+        printf("  mov eax, DWORD PTR %s[rip]\n", node->name);
+        printf("  push rax\n");
+        return;
+    }
+
     if (node->ty != ND_IDENT) {
         error("代入の左辺値が変数ではありません","");
     }
@@ -153,6 +162,11 @@ void gen(Node *node) {
         // 引数を評価
         gen(node->lhs);
         gen(node->rhs);
+        return;
+    }
+
+    if (node->ty == ND_GLOBAL_VAL) {
+        gen_lval(node);
         return;
     }
 
