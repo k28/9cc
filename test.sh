@@ -137,6 +137,10 @@ try 0   'int main(){0 >= 1;}'
 try 7   'int main(){ int a; {a = 7; int b; b = 2;} return a;}'
 try 8   'int main(){ int a; {a = 5; int b; b = 1; {a = a + b;}} {a = a + 2;} return a;}'
 try 7   'int main(){ int a; {a = 5; int b; b = 1; if(0){a = a + b;}} {a = a + 2;} return a;}'
-try 1   "int foo; int bar; int main(){return 1;}"
+try 1   "int x; int bar; int main(){return 1;}"
+try 1   "int x; int main(){x = 2; return 1;}"
+try 2   "int x; int main(){x = 2; return x;}"
+try 7   "int x; int y; int hoge() {y = 4; return y;} int main(){x = 2; int y; y = 7; hoge(); return y;}"
+try 4   "int x; int y; int hoge() {y = 4; return y;} int main(){x = 2; hoge(); return y;}"
 
 echo OK

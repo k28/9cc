@@ -72,7 +72,8 @@ void gen_lval(Node *node) {
         // グローバル変数の値を入れる
         Variable *val_info = map_get(global_variables_, node->name);
         // TODO 他の型, 配列に対応するでも対応できるようにする
-        printf("  mov eax, DWORD PTR %s[rip]\n", node->name);
+        //printf("  mov eax, DWORD PTR %s[rip]\n", node->name);
+        printf("  lea rax, %s[rip]\n", node->name);
         printf("  push rax\n");
         return;
     }
@@ -166,7 +167,9 @@ void gen(Node *node) {
     }
 
     if (node->ty == ND_GLOBAL_VAL) {
-        gen_lval(node);
+        // gen_lval(node);
+        printf("  mov eax, DWORD PTR %s[rip]\n", node->name);
+        printf("  push rax\n");
         return;
     }
 

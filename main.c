@@ -35,19 +35,20 @@ int main(int argc, char **argv) {
     // 値の調整
     sema();
 
-    // アセンブリの前半部分を出力
-    printf(".intel_syntax noprefix\n");
-    printf(".global main\n");
-
     // TODO グローバル変数を定義
     int global_val_count = get_map_size(global_variables_);
     for (int i = 0; i < global_val_count; i++) {
         char *key = map_get_key_at_index(global_variables_, i);
         Variable *val_info = map_get_at_index(global_variables_, i);
         int val_size = size_of_variale(val_info);
-        printf("%s:\n", key);
-        printf("  .zero %d\n\n", val_size);
+        // printf("%s:\n", key);
+        // printf("  .zero %d\n\n", val_size);
+        printf(".comm  %s, %d, %d\n", key, val_size, val_size);
     }
+
+    // アセンブリの前半部分を出力
+    printf(".intel_syntax noprefix\n");
+    printf(".global main\n");
 
     // 抽象構文木を下りながらコード生成
     for (int i = 0; i < functions->len; i++) {
