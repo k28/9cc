@@ -35,7 +35,7 @@ int main(int argc, char **argv) {
     // 値の調整
     sema();
 
-    // TODO グローバル変数を定義
+    // グローバル変数を定義
     int global_val_count = get_map_size(global_variables_);
     for (int i = 0; i < global_val_count; i++) {
         char *key = map_get_key_at_index(global_variables_, i);
