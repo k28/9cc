@@ -114,6 +114,7 @@ extern int pos;
 
 // 関数のプロトタイプ宣言
 Vector *new_vector();
+Variable *new_variable(Type *type, int offset); // container.c
 void vec_push(Vector *vec, void *elem);
 
 Map *new_map();
@@ -123,6 +124,7 @@ void *map_get_at_index(Map *map, int index);
 char *map_get_key_at_index(Map *map, int index);
 int get_map_size(Map *map);
 
+// parse.c
 Token *new_token(int ty, char *input);
 Token *new_token_num(char *input, int val);
 Token *get_token(int pos);
@@ -132,7 +134,6 @@ Node *new_node_num(int val);
 
 Type *new_type(int ty, Type *ptrof);
 
-Variable *new_variable(Type *type, int offset);
 
 int consume_not_add(int index, int ty);
 int consume(int ty);
@@ -145,17 +146,20 @@ Node *mul();
 Node *add();
 Node *relational();
 Node *equality();
-Vector *func_body();
-Node *argument(int *count_of_arguments);
 Node *assign();
 Node *return_node();
+Node *argument(int *count_of_arguments);
 Node *ifstmt();
 Node *while_stmt();
 Node *for_stmt();
+Node *def_variable();
+Node *blockstmt();
 Node *expr();
 Node *stmt();
+Vector *func_body();
 Vector *def_argument(char *func_name);
 Function *def_function();
+void def_global_variable();
 void parse();
 
 int is_ident_word(char *p);
