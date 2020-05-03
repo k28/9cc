@@ -1,6 +1,7 @@
 #!/bin/bash
 
-test_code="int main(){char a; a = 2; a = a + 4; return a;}"
+test_code="char x; int main(){x = 2; return x;}"
+#test_code="char x; int main(){x = 2; return 1;}"
 #test_code="int main(){int a; a = 7; return a;}"
 # test_code="int hoge; int main(){hoge = 7; return 1;}"
 #test_code='int hoge(){int a; a = 3;} int main(){int a; a = 4; a;}'

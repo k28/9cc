@@ -771,9 +771,9 @@ Function *def_function() {
     // return NULL;
 }
 
-void def_global_variable() {
+void def_global_variable(int ty) {
     // このデータの型
-    Type *type = new_type(INT, NULL);
+    Type *type = new_type(ty, NULL);
     // *があれば足していく
     while (consume('*')) {
         Type *ptr_type = new_type(PTR, type);
@@ -820,8 +820,19 @@ void parse() {
                     vec_push(functions, function);
                 }
             } else {
-                // TODO グローバル変数
-                def_global_variable();
+                // グローバル変数
+                def_global_variable(INT);
+            }
+        } else if (consume(TK_CHAR) && get_token(pos)->ty == TK_IDENT) {
+            if (consume_not_add(pos + 1, '(')) {
+                // ( があれば関数定義
+                Function *function = def_function();
+                if (function) {
+                    vec_push(functions, function);
+                }
+            } else {
+                // グローバル変数
+                def_global_variable(CHAR);
             }
         } else {
             error("関数またはグローバル変数の定義が不正です :%s\n", get_token(pos)->input);

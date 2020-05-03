@@ -64,6 +64,7 @@ void gen_equality(Node *node) {
 
 // 与えられたノードが変数を表しているときに、その変数のアドレスを計算してスタックにプッシュする
 void gen_lval(Node *node) {
+    printf("# GEN LVAL\n");
     if (node->ty == ND_DEREFERENCE) {
         // 右辺値をコンパイルする
         gen(node->rhs);
@@ -172,7 +173,12 @@ void gen(Node *node) {
     if (node->ty == ND_GLOBAL_VAL) {
         // gen_lval(node);
         printf("# ND_GLOBAL_VAL\n");
-        printf("  mov eax, DWORD PTR %s[rip]\n", node->name);
+        Variable *val_info = map_get(global_variables_, node->name);
+        if (val_info->type->ty == INT) {
+            printf("  mov eax, DWORD PTR %s[rip]\n", node->name);
+        } else if (val_info->type->ty == CHAR) {
+            printf("  movsx eax, BYTE PTR %s[rip]\n", node->name);
+        }
         printf("  push rax\n");
         return;
     }
