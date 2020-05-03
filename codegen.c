@@ -139,6 +139,7 @@ void gen(Node *node) {
     }
 
     if (node->ty == ND_FUNCCALL) {
+        printf("# ND_FUNCCALL\n");
         // 引数がある場合は引数を評価
         if (node->rhs != NULL) {
             gen(node->rhs);
@@ -170,6 +171,7 @@ void gen(Node *node) {
 
     if (node->ty == ND_GLOBAL_VAL) {
         // gen_lval(node);
+        printf("# ND_GLOBAL_VAL\n");
         printf("  mov eax, DWORD PTR %s[rip]\n", node->name);
         printf("  push rax\n");
         return;
@@ -255,6 +257,7 @@ void gen(Node *node) {
     }
 
     if (node->ty == ND_IF) {
+        printf("# ND_IF\n");
         // ifの時には、左辺を評価してから、結果を確認し
         // ラベルを作成する
         gen(node->lhs);
@@ -277,6 +280,7 @@ void gen(Node *node) {
     }
 
     if (node->ty == ND_WHILE) {
+        printf("# ND_WHILE\n");
         // while文は初めにジャンプ先のラベルを設定
         printf(".Lbegin%03d:\n",node->label);
 
@@ -300,6 +304,7 @@ void gen(Node *node) {
     }
 
     if (node->ty == ND_FOR) {
+        printf("# ND_FOR\n");
         if (node->lhs != NULL) {
             // 初めに初期設定を行う
             gen(node->lhs);
@@ -329,6 +334,7 @@ void gen(Node *node) {
     }
 
     if (node->ty == ND_RETURN) {
+        printf("# ND_RETURN\n");
         // 右辺を評価
         if (node->rhs != NULL) {
             gen(node->rhs);
