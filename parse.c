@@ -545,11 +545,11 @@ Node *for_stmt() {
     return node;
 }
 
-Node *def_variable() {
+Node *def_variable(int ty) {
     // int hoge;
 
     // このデータの型
-    Type *type = new_type(INT, NULL);
+    Type *type = new_type(ty, NULL);
     // *があればtypeに足していく
     while (consume('*')) {
         Type *ptr_type = new_type(PTR, type);
@@ -643,8 +643,14 @@ Node *stmt() {
 
     if (consume(TK_INT)) {
         // 変数定義
-        return def_variable();
+        return def_variable(INT);
     }
+
+    if (consume(TK_CHAR)) {
+        // 変数定義
+        return def_variable(CHAR);
+    }
+
 
     // Node *node;
     // if (consume(TK_RETURN)) {

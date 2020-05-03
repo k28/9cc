@@ -142,5 +142,9 @@ try 1   "int x; int main(){x = 2; return 1;}"
 try 2   "int x; int main(){x = 2; return x;}"
 try 7   "int x; int y; int hoge() {y = 4; return y;} int main(){x = 2; int y; y = 7; hoge(); return y;}"
 try 4   "int x; int y; int hoge() {y = 4; return y;} int main(){x = 2; hoge(); return y;}"
+try 7   'int main(){char a; a = 7; a;}'
+try 7   'int main(){char a; a = 2; a = 1; a = 7; a;}'
+try 5   'int main(){char a; char b; a=1; b=2; b + 3;}'
+try 1   'int main(){char a; char b; char c; a=1; b=2; a;}'
 
 echo OK

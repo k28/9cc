@@ -8,6 +8,8 @@ int size_of_variale(Variable *variable) {
     switch (type->ty) {
         case INT:
            return SIZE_OF_INT;
+        case CHAR:
+           return SIZE_OF_CHAR;
         case PTR:
            return SIZE_OF_ADDRESS;
         case ARRAY:
@@ -174,12 +176,16 @@ void gen(Node *node) {
     }
 
     if (node->ty == ND_IDENT) {
+        printf("# ND_IDENT\n");
         gen_lval(node);
         printf("  pop rax\n");
 
         Variable *val_info = map_get(variables, node->name);
         if (val_info->type->ty == INT) {
             printf("  mov eax, DWORD PTR [rax]\n");
+            printf("  and rax, 0xFFFF\n");
+        } else if (val_info->type->ty == CHAR) {
+            printf("  movsx eax, BYTE PTR [rax]\n");
             printf("  and rax, 0xFFFF\n");
         } else if (val_info->type->ty == PTR) {
             printf("  mov rax, [rax]\n");
@@ -223,11 +229,14 @@ void gen(Node *node) {
         Variable *val_info = map_get(variables, node->lhs->name);
 
         gen(node->rhs);
-        printf("  pop rdi\n");
-        printf("  pop rax\n");
+        printf("  pop rdi\n");  // 右辺
+        printf("  pop rax\n");  // 左辺
         if (val_info == NULL || val_info->type->ty == INT) {
             printf("  and rdi, 0xFFFF\n");
             printf("  mov DWORD PTR [rax], edi\n");
+        } else if (val_info->type->ty == CHAR) {
+            printf("  and rdi, 0x00FF\n");
+            printf("  mov [rax], dil\n");
         } else {
             // ポインターへの代入
             printf("  mov [rax], rdi\n");

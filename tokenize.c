@@ -97,6 +97,15 @@ void tokenize(char *p) {
             continue;
         }
 
+        // char
+        if (strncmp(p, "char", 4) == 0) {
+            Token *token = new_token(TK_CHAR, p);
+            vec_push(vec, token);
+            i++;
+            p += 4;
+            continue;
+        }
+
         // sizeof
         if (strncmp(p, "sizeof", 6) == 0) {
             Token *token = new_token(TK_SIZEOF, p);
