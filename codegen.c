@@ -247,7 +247,7 @@ void gen(Node *node) {
     }
 
     if (node->ty == ND_ASSIGN) {
-        printf("# ND_ASSIGN\n");
+        printf("# ND_ASSIGN VAL [%s]\n", node->lhs->name);
         // assignの時には
         // 左の変数に右の値を入れる
         // 左の変数をgen_lvalでスタックに入れておいてから
@@ -256,26 +256,33 @@ void gen(Node *node) {
 
         // 変数の場合は、ポインター演算か確認する
         Variable *val_info = map_get(variables, node->lhs->name);
+        int type = INT;
+        if (val_info != NULL) {
+            type = val_info->type->ty;
+        } else if (node->lhs->ty == ND_DEREFERENCE) {
+            // 何のポインターなのか調べる TODO semaなどで事前に調べておけない?
+            Variable *val_info = map_get(variables, node->lhs->rhs->name);
+            if(val_info != NULL) {
+                type = val_info->type->ptrof->ty;
+            }
+        }
 
         gen(node->rhs);
         printf("  pop rdi\n");  // 右辺
         printf("  pop rax\n");  // 左辺
-        if (val_info == NULL || val_info->type->ty == INT) {
+        if (type == INT) {
             printf("  and rdi, 0xFFFF\n");
             printf("  mov DWORD PTR [rax], edi\n");
-        } else if (val_info->type->ty == CHAR) {
+        } else if (type == CHAR) {
             printf("  and rdi, 0x00FF\n");
             printf("  mov BYTE PTR [rax], dil\n");
-        } else if (val_info->type->ty == PTR) {
+        } else if (type == PTR) {
             // ポインターへの代入
             Type *pointer_type = val_info->type->ptrof;
             if (pointer_type->ty == INT) {
                 printf("  mov [rax], rdi\n");
             } else if (pointer_type->ty == CHAR) {
                 printf("  mov [rax], rdi\n");
-                // ポインターへの代入はINTと一緒でいいんじゃない
-                // printf("  and rdi, 0x00FF\n");
-                // printf("  mov BYTE PTR [rax], dil\n");
             }
         } else {
             // TODO 必要?
@@ -501,7 +508,7 @@ void gen_function(Function *function) {
         Variable *val_info = map_get_at_index(function->variables, i);
         size_of_variables += size_of_variale(val_info);
         val_info->stack_offset = size_of_variables;
-        size_of_variables += size_of_variale(val_info);
+        // size_of_variables += size_of_variale(val_info);
     }
     size_of_variables += 8;
 
