@@ -78,6 +78,7 @@ try 0   'int main(){int i; for(i = 0; i != 10; i = i + 1;){return i;} return 10;
 try 5   'int main(){int i; for(i = 0; i != 10; i = i + 1;){ if (i == 5) return i;} return 10;}'
 try 5   'int hoge(int x) {if (x == 0) return 5; return 10;} int main(){return hoge(0);}'
 try 10  'int hoge(int x) {if (x == 0) return 5; return 10;} int main(){return hoge(1);}'
+# pointer
 try 10  'int main(){int a; int *b; a = 10; return a;}'
 try 1   'int main(){int x; int *y; x = 1; y = &x; return x;}'
 try 10  'int main(){int x; int *y; x = 10; y = &x; return *y;}'
@@ -150,5 +151,23 @@ try 1   "char x; int main(){x = 2; return 1;}"
 try 2   "char x; int main(){x = 2; return x;}"
 try 9   "char x; int main(){x = 2; char y; y = 7; x = y + 2; return x;}"
 try 7   "char x; char y; int hoge() {y = 4; return y;} int main(){x = 2; char y; y = 7; hoge(); return y;}"
+echo "char pointer"
+try 10  'int main(){char a; char *b; a = 10; return a;}'
+try 1   'int main(){char x; char *y; x = 1; y = &x; return x;}'
+try 10  'int main(){char x; char *y; x = 10; y = &x; return *y;}'
+try 10  'int main(){char x; char c; x = 10; char *y; y = &x; return *y;}'
+try 13  'int main(){char x; char c; x = 13; char *y; y = &x; return x;}'
+try 13  'int main(){char x; char c; x = 13; char *y; y = &x; return *y;}'
+try 13  'int main(){char x; char *y; char c; x = 13; y = &x; c = 0; return *y;}'
+try 13  'int main(){char x; char c; x = 13; char *y; y = &x; c = 0; return *y;}'
+try 7   'int main(){char x; char c; x = 10; c = 7; return c;}'
+try 10  'int main(){char x; char c; x = 10; c = 7; return x;}'
+try 10  'int main(){char x; char *c; x = 10; char *y; y = &x; return *y;}'
+try 7   'int main(){char x; char c; x = 10; c = 7; char *y; return c;}'
+try 7   'int main(){char x; char c; x = 10; c = 7; char *y; y = &x; return c;}'
+try 7   'int main(){char x; char c; x = 10; char *y; y = &x; *y = 7; return *y;}'
+try 11  'int main(){char x; char *y; x = 11; y = &x; return *y;}'
+try 13  'int main(){char x; x = 3; char *y; y = &x; x = 13; return *y;}'
+try 10  'int main(){char *b; char a; b = &a; *b = 10; return *b;}'
 
 echo OK

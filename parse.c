@@ -7,10 +7,10 @@
  * program: def_func def_func
  * program: ε
  *
- * def_func: "int" ident "(" def_argument ")" "{" func_body "}"
+ * def_func: model ident "(" def_argument ")" "{" func_body "}"
  *
- * def_argument: "int" ident
- * def_argument: "int" ident "," def_argument
+ * def_argument: model ident
+ * def_argument: model ident "," def_argument
  * def_argument: ε
  *
  * func_body: stmt func_body
@@ -63,9 +63,10 @@
  *
  * digit: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
  * ident: "a" - "z"
+ * model: "int", "char"
  *
- * def_variable: "int" "*"* ident ";"
- * def_variable: "int" ident "[" num "]" ";"
+ * def_variable: model "*"* ident ";"
+ * def_variable: model ident "[" num "]" ";"
  *
  * if ( assign ) {
  *     func_body

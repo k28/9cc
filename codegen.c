@@ -64,7 +64,7 @@ void gen_equality(Node *node) {
 
 // 与えられたノードが変数を表しているときに、その変数のアドレスを計算してスタックにプッシュする
 void gen_lval(Node *node) {
-    printf("# GEN LVAL\n");
+    printf("# GEN LVAL [%s]\n", node->name);
     if (node->ty == ND_DEREFERENCE) {
         // 右辺値をコンパイルする
         gen(node->rhs);
@@ -73,7 +73,7 @@ void gen_lval(Node *node) {
 
     if (node->ty == ND_GLOBAL_VAL) {
         // グローバル変数の値を入れる
-        Variable *val_info = map_get(global_variables_, node->name);
+        // Variable *val_info = map_get(global_variables_, node->name);
         // TODO 他の型, 配列に対応するでも対応できるようにする
         //printf("  mov eax, DWORD PTR %s[rip]\n", node->name);
         printf("  lea rax, %s[rip]\n", node->name);
@@ -184,7 +184,7 @@ void gen(Node *node) {
     }
 
     if (node->ty == ND_IDENT) {
-        printf("# ND_IDENT\n");
+        printf("# ND_IDENT [%s]\n", node->name);
         gen_lval(node);
         printf("  pop rax\n");
 
@@ -212,8 +212,29 @@ void gen(Node *node) {
         gen(node->rhs);
         // 変数のアドレスが示すものをスタックに入れる
         printf("  pop rax\n");
-        printf("  mov eax, DWORD PTR [rax]\n");
-        printf("  and rax, 0xFFFF\n");
+        Variable *val_info = map_get(variables, node->rhs->name);
+        if (val_info == NULL || val_info->type->ty == INT) {
+            // TODO *(p + 1) とかの対応が必要 現状int型しか対応できていない
+            printf("  mov eax, DWORD PTR [rax]\n");
+            printf("  and rax, 0xFFFF\n");
+        } else if (val_info->type->ty == CHAR) {
+            printf("  movsx eax, BYTE PTR [rax]\n");
+            printf("  and rax, 0xFFFF\n");
+        } else if (val_info->type->ty == PTR) {
+            Type *pointer_type = val_info->type->ptrof;
+            if (pointer_type->ty == INT) {
+                printf("  mov eax, DWORD PTR [rax]\n");
+                printf("  and rax, 0xFFFF\n");
+            } else if (pointer_type->ty == CHAR) {
+                printf("  movsx eax, BYTE PTR [rax]\n");
+                printf("  and rax, 0xFFFF\n");
+            }
+        } else if (val_info->type->ty == ARRAY) {
+            printf("  mov eax, DWORD PTR [rax]\n");
+            printf("  and rax, 0xFFFF\n");
+        } else {
+            error("DEREFERENCE not support format. ", "");
+        }
         printf("  push rax\n");
 
         return;
@@ -244,9 +265,21 @@ void gen(Node *node) {
             printf("  mov DWORD PTR [rax], edi\n");
         } else if (val_info->type->ty == CHAR) {
             printf("  and rdi, 0x00FF\n");
-            printf("  mov [rax], dil\n");
-        } else {
+            printf("  mov BYTE PTR [rax], dil\n");
+        } else if (val_info->type->ty == PTR) {
             // ポインターへの代入
+            Type *pointer_type = val_info->type->ptrof;
+            if (pointer_type->ty == INT) {
+                printf("  mov [rax], rdi\n");
+            } else if (pointer_type->ty == CHAR) {
+                printf("  mov [rax], rdi\n");
+                // ポインターへの代入はINTと一緒でいいんじゃない
+                // printf("  and rdi, 0x00FF\n");
+                // printf("  mov BYTE PTR [rax], dil\n");
+            }
+        } else {
+            // TODO 必要?
+            error("ASSIGN not support format. ", "");
             printf("  mov [rax], rdi\n");
         }
         printf("  push rdi\n");
@@ -461,13 +494,16 @@ void gen_function(Function *function) {
     // プロローグ
     // 変数の数分の領域を確保する
     // 変数のタイプによって確保するメモリ領域を変更する
-    int size_of_variables = 8;  // オフセットを入れると関数呼び出しが成功する
+    // FIXME 変数のスタック領域の確保に問題がある => 前後にsize_of_variablesするのはおかしいし、最後に+=8するのもおかしい
+    int size_of_variables = 0;
     int variable_count = get_map_size(function->variables);
     for (int i = 0; i < variable_count; i++) {
         Variable *val_info = map_get_at_index(function->variables, i);
         size_of_variables += size_of_variale(val_info);
         val_info->stack_offset = size_of_variables;
+        size_of_variables += size_of_variale(val_info);
     }
+    size_of_variables += 8;
 
     // RSPを16の倍数になるように調整
     int rsp_offset = size_of_variables % 16;

@@ -11,6 +11,9 @@ int offset_of_variable(Variable *val_info) {
         // CHARの変数
         return 1;
     }
+    if (val_info->type->ty == PTR && val_info->type->ptrof->ty == CHAR) {
+        return SIZE_OF_CHAR;
+    }
     if (val_info->type->ty == PTR && val_info->type->ptrof->ty == INT) {
         // INTへのポインター
         return SIZE_OF_INT;
