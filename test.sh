@@ -171,5 +171,12 @@ try 13  'int main(){char x; x = 3; char *y; y = &x; x = 13; return *y;}'
 try 10  'int main(){char *b; char a; b = &a; *b = 10; return *b;}'
 try 4   'char hoge(){char a; a = 3;} char main(){char a; a = 4; a;}'
 try 2   'int main(){char a[2]; *a = 1; a[1] = 2; return a[1];}'
+try 5   'char hoge(char x) {if (x == 0) return 5; return 10;} char main(){return hoge(0);}'
+try 1   'char hoge(char a,char b,char c,char d,char e,char f){a;} char main(){hoge(1,2,3,4,5,6);}'
+try 2   'char hoge(char a,char b,char c,char d,char e,char f){b;} char main(){hoge(1,2,3,4,5,6);}'
+try 3   'char hoge(char a,char b,char c,char d,char e,char f){c;} char main(){hoge(1,2,3,4,5,6);}'
+try 4   'char hoge(char a,char b,char c,char d,char e,char f){d;} char main(){hoge(1,2,3,4,5,6);}'
+try 5   'char hoge(char a,char b,char c,char d,char e,char f){e;} char main(){hoge(1,2,3,4,5,6);}'
+try 6   'char hoge(char a,char b,char c,char d,char e,char f){f;} char main(){hoge(1,2,3,4,5,6);}'
 
 echo OK

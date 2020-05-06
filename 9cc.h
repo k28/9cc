@@ -90,7 +90,7 @@ typedef struct Function {
 
 // 型を表す構造体
 typedef struct Type {
-    enum { INT, CHAR, PTR, ARRAY } ty;
+    enum { UNKNOWN, INT, CHAR, PTR, ARRAY } ty;
     struct Type *ptrof;
     size_t array_size;  // 配列の場合に配列のサイズ
 } Type;

@@ -688,9 +688,15 @@ Vector *def_argument(char *func_name) {
     Vector *arguments = new_vector();
 
     for (;;) {
+        int arg_type = UNKNOWN;
         if (consume(TK_INT)) {
+            arg_type = INT;
+        } else if (consume(TK_CHAR)) {
+            arg_type = CHAR;
+        }
+        if (arg_type != UNKNOWN) {
             // このデータの型
-            Type *type = new_type(INT, NULL);
+            Type *type = new_type(arg_type, NULL);
             // *があればtypeに足していく
             while (consume('*')) {
                 Type *ptr_type = new_type(PTR, type);

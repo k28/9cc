@@ -446,6 +446,8 @@ void gen_function_variables(Function *function) {
             case 1:
                 if (val_info->type->ty == INT) {
                     printf("  mov DWORD PTR [rax], edi\n");
+                } else if (val_info->type->ty == CHAR) {
+                    printf("  mov BYTE PTR [rax], dil\n");
                 } else {
                     printf("  mov [rax], rdi\n");
                 }
@@ -453,6 +455,8 @@ void gen_function_variables(Function *function) {
             case 2:
                 if (val_info->type->ty == INT) {
                     printf("  mov DWORD PTR [rax], esi\n");
+                } else if (val_info->type->ty == CHAR) {
+                    printf("  mov BYTE PTR [rax], sil\n");
                 } else {
                     printf("  mov [rax], rsi\n");
                 }
@@ -460,6 +464,8 @@ void gen_function_variables(Function *function) {
             case 3:
                 if (val_info->type->ty == INT) {
                     printf("  mov DWORD PTR [rax], edx\n");
+                } else if (val_info->type->ty == CHAR) {
+                    printf("  mov BYTE PTR [rax], dl\n");
                 } else {
                     printf("  mov [rax], rdx\n");
                 }
@@ -467,6 +473,8 @@ void gen_function_variables(Function *function) {
             case 4:
                 if (val_info->type->ty == INT) {
                     printf("  mov DWORD PTR [rax], ecx\n");
+                } else if (val_info->type->ty == CHAR) {
+                    printf("  mov BYTE PTR [rax], cl\n");
                 } else {
                     printf("  mov [rax], rcx\n");
                 }
@@ -474,6 +482,8 @@ void gen_function_variables(Function *function) {
             case 5:
                 if (val_info->type->ty == INT) {
                     printf("  mov DWORD PTR [rax], r8d\n");
+                } else if (val_info->type->ty == CHAR) {
+                    printf("  mov BYTE PTR [rax], r8b\n");
                 } else {
                     printf("  mov [rax], r8\n");
                 }
@@ -481,6 +491,8 @@ void gen_function_variables(Function *function) {
             case 6:
                 if (val_info->type->ty == INT) {
                     printf("  mov DWORD PTR [rax], r9d\n");
+                } else if (val_info->type->ty == CHAR) {
+                    printf("  mov BYTE PTR [rax], r9b\n");
                 } else {
                     printf("  mov [rax], r9\n");
                 }
