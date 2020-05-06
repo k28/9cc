@@ -170,5 +170,6 @@ try 11  'int main(){char x; char *y; x = 11; y = &x; return *y;}'
 try 13  'int main(){char x; x = 3; char *y; y = &x; x = 13; return *y;}'
 try 10  'int main(){char *b; char a; b = &a; *b = 10; return *b;}'
 try 4   'char hoge(){char a; a = 3;} char main(){char a; a = 4; a;}'
+try 2   'int main(){char a[2]; *a = 1; a[1] = 2; return a[1];}'
 
 echo OK

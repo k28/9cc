@@ -26,6 +26,10 @@ int offset_of_variable(Variable *val_info) {
         // INT 配列へのポインター
         return SIZE_OF_INT;
     }
+    if (val_info->type->ty == ARRAY && val_info->type->ptrof->ty == CHAR) {
+        // CHAR 配列へのポインター
+        return SIZE_OF_CHAR;
+    }
 
     // ここに来たら対応不足
     error("不明な変数型です.", "");
