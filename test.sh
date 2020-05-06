@@ -178,5 +178,10 @@ try 3   'char hoge(char a,char b,char c,char d,char e,char f){c;} char main(){ho
 try 4   'char hoge(char a,char b,char c,char d,char e,char f){d;} char main(){hoge(1,2,3,4,5,6);}'
 try 5   'char hoge(char a,char b,char c,char d,char e,char f){e;} char main(){hoge(1,2,3,4,5,6);}'
 try 6   'char hoge(char a,char b,char c,char d,char e,char f){f;} char main(){hoge(1,2,3,4,5,6);}'
+try 1   'int main(){int r; char x; int *y; r = sizeof(x); return r;}'
+try 10  'int main(){char a[10]; return sizeof(a);}'
+try 8   'int main(){char r; char x; char *y; r = sizeof(y); return r;}'
+try 1   'int main(){char r; char x; char *y; r = sizeof(x + 3); return r;}'
+try 8   'int main(){char r; char x; char *y; r = sizeof(y + 3); return r;}'
 
 echo OK

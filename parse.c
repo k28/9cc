@@ -160,6 +160,7 @@ int sizeof_node(Node *node) {
     if (node->ty == ND_IDENT) {
         // 変数の型を確認する
         Variable *val_info = map_get(variables, node->name);
+        if (val_info->type->ty == CHAR)  return SIZE_OF_CHAR;
         if (val_info->type->ty == INT)   return SIZE_OF_INT;
         if (val_info->type->ty == PTR)   return SIZE_OF_ADDRESS;
         if (val_info->type->ty == ARRAY) return val_info->type->array_size;
