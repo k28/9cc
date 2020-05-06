@@ -183,5 +183,6 @@ try 10  'int main(){char a[10]; return sizeof(a);}'
 try 8   'int main(){char r; char x; char *y; r = sizeof(y); return r;}'
 try 1   'int main(){char r; char x; char *y; r = sizeof(x + 3); return r;}'
 try 8   'int main(){char r; char x; char *y; r = sizeof(y + 3); return r;}'
+try 3   'int main(){char x[3]; x[0] = -1; x[1] = 2; int y; y = 4; return x[0] + y;}'
 
 echo OK
