@@ -169,5 +169,6 @@ try 7   'int main(){char x; char c; x = 10; char *y; y = &x; *y = 7; return *y;}
 try 11  'int main(){char x; char *y; x = 11; y = &x; return *y;}'
 try 13  'int main(){char x; x = 3; char *y; y = &x; x = 13; return *y;}'
 try 10  'int main(){char *b; char a; b = &a; *b = 10; return *b;}'
+try 4   'char hoge(){char a; a = 3;} char main(){char a; a = 4; a;}'
 
 echo OK
