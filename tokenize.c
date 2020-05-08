@@ -115,6 +115,27 @@ void tokenize(char *p) {
             continue;
         }
 
+        // 文字列
+        if (*p == '"') {
+            // 文字列トークン, 次のダブルクオートまで読み込む
+            char *pstart = ++p;
+            int char_len = 0;
+            while(*p != '"') {
+                p++;
+                char_len++;
+            }
+
+            char *str = malloc(char_len + 1);
+            memset(str, 0, char_len + 1);
+            strncpy(str, pstart, char_len);
+            Token *token = new_token(TK_STRING, str);
+            vec_push(vec, token);
+            i++;
+
+            p += 1; // 最後の"を進める
+            continue;
+        }
+
         // 変数(識別子) もしくは 関数呼び出し
         // 複数変数の文字列に対応するため、TK_IDENTに変数名を入れる
         if ('a' <= *p && *p <= 'z') {

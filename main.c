@@ -2,6 +2,7 @@
 
 Vector *tokens;
 Vector *functions;
+Vector *strings_;
 Map    *global_variables_;
 int label_ = 0;
 
@@ -25,6 +26,9 @@ int main(int argc, char **argv) {
     // 関数定義を入れるVecotr
     functions = new_vector();
 
+    // 文字列リテラルをいれるVector
+    strings_ = new_vector();
+
     // グローバル変数を入れるMap
     global_variables_ = new_map();
 
@@ -34,6 +38,9 @@ int main(int argc, char **argv) {
     parse();
     // 値の調整
     sema();
+
+    // アセンブリの前半部分を出力
+    printf(".intel_syntax noprefix\n");
 
     // グローバル変数を定義
     int global_val_count = get_map_size(global_variables_);
@@ -46,10 +53,17 @@ int main(int argc, char **argv) {
         printf(".comm  %s, %d, %d\n", key, val_size, val_size);
     }
 
-    // アセンブリの前半部分を出力
-    printf(".intel_syntax noprefix\n");
-    printf(".global main\n");
+    // 文字列リテラルを定義
+    for (int i = 0; i < strings_->len; i++) {
+        String *string = (String *)strings_->data[i];
+        // printf("aaaa: db \"aaaa\"\n");
+        printf(".data\n");
+        printf(".L.str%d:\n", string->index);
+        printf("  .string \"%s\"\n", string->val);
+    }
 
+
+    printf(".global main\n");
     // 抽象構文木を下りながらコード生成
     for (int i = 0; i < functions->len; i++) {
         Function *function = (Function *)functions->data[i];

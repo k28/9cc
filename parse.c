@@ -60,6 +60,7 @@
  * term: "&" term
  * term: "*" term
  * term: "(" assign ")"
+ * term: string
  *
  * digit: "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
  * ident: "a" - "z"
@@ -207,6 +208,22 @@ Node *term() {
 
     if (get_token(pos)->ty == TK_NUM) {
         return new_node_num(get_token(pos++)->val);
+    }
+
+    if (get_token(pos)->ty == TK_STRING) {
+        // 文字リテラル
+        // 文字列リテラルを入れておくVectorに全て入れておく
+        char *val = get_token(pos++)->input;
+        String *string = (String *)malloc(sizeof(String));
+        string->index = strings_->len;
+        string->val   = val;
+        vec_push(strings_, string);
+
+        // NodeにはVectorに入れたStringのIndexを設定しておく
+        Node *node = new_node(ND_STRING, NULL, NULL);
+        node->name = val;
+        node->val  = string->index;
+        return node;
     }
 
     if (get_token(pos)->ty == TK_IDENT) {

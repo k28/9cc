@@ -5,7 +5,7 @@ try() {
     input="$2"
 
     ./9cc "$input" > tmp.s
-    gcc -o tmp tmp.s test.o
+    gcc -static -o tmp tmp.s test.o
     ./tmp
     actual="$?"
 
@@ -184,5 +184,7 @@ try 8   'int main(){char r; char x; char *y; r = sizeof(y); return r;}'
 try 1   'int main(){char r; char x; char *y; r = sizeof(x + 3); return r;}'
 try 8   'int main(){char r; char x; char *y; r = sizeof(y + 3); return r;}'
 try 3   'int main(){char x[3]; x[0] = -1; x[1] = 2; int y; y = 4; return x[0] + y;}'
+try 7   'int main(){print_str("Hello World!\n"); return 7;}'
+
 
 echo OK

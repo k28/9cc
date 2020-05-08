@@ -41,6 +41,7 @@ enum {
     TK_INT,         // int 定義 
     TK_CHAR,        // char 定義 
     TK_SIZEOF,      // sizeof 演算子
+    TK_STRING,      // 文字列トークン
     TK_EOF,         // 入力の終わりを表すトークン
 };
 
@@ -67,6 +68,7 @@ enum {
     ND_RETURN,      // return文
     ND_DEREFERENCE, // デリファレンス演算子
     ND_REFERENCE,   // リファレンス演算子 (&)
+    ND_STRING,      // 文字列リテラル
     ND_BLOCK,       // ブロック
 };
 
@@ -74,7 +76,7 @@ typedef struct Node {
     int ty;             // 演算子がND_NUM
     struct Node *lhs;   // 左辺
     struct Node *rhs;   // 右辺
-    int val;            // tyがND_NUMの場合その値, tyがND_FUNCCALLの場合引数の数
+    int val;            // tyがND_NUMの場合その値, tyがND_FUNCCALLの場合引数の数, ty がND_STRINGの時Vectorのindex
     char *name;         // tyがND_IDENT,ND_FUNCCALLの場合, 等値の場合に値が入る
     Vector *program;    // tyがif,for,whileの場合条件にマッチした時の処理が入る
     int    label;       // tyがif,for,whileの場合に使うラベル
@@ -101,9 +103,16 @@ typedef struct Variable {
     int stack_offset;
 } Variable;
 
+// 文字列リテラルを表す構造体
+typedef struct String {
+    int index;  // Index
+    char *val;  // 文字列
+} String;
+
 // トークナイズした結果のトークンを保持するベクター
 extern Vector *tokens;
 extern Vector *functions;           // 関数を保持するためのベクター
+extern Vector *strings_;            // 文字列リテラルをいれるベクター
 extern Map    *variables;           // ローカル変数の種類を保持するためのMap
 extern Map    *global_variables_;   // グローバル変数を保持するMap
 extern int    label_;               // if文などで使用するラベル番号

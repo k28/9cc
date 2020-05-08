@@ -15,6 +15,10 @@ int size_of_variale(Variable *variable) {
         case ARRAY:
            // TODO 配列の型を見る必要がある
            return type->array_size * SIZE_OF_INT;
+        case UNKNOWN:
+           // ここにきたらおかしい
+           error("不明な変数型です.", "");
+           return 0;
     }
 
     error("不明な変数型です.", "");
@@ -201,6 +205,13 @@ void gen(Node *node) {
             // 配列の時は、アドレスをそのまま返す
         }
 
+        printf("  push rax\n");
+        return;
+    }
+
+    if (node->ty == ND_STRING) {
+        printf("# ND_STRING [%s]\n", node->name);
+        printf("  lea rax, .L.str%d\n", node->val);
         printf("  push rax\n");
         return;
     }
