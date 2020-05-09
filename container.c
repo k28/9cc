@@ -92,8 +92,16 @@ Variable *new_variable(Type *type, int offset) {
 }
 
 // エラー表示用関数
-void error(char *message, char *s) {
-    fprintf(stderr, message, s);
+// void error(char *message, char *s) {
+//     fprintf(stderr, message, s);
+//     exit(1);
+// }
+
+void error(char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
     exit(1);
 }
 

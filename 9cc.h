@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdarg.h>
 
 #define SIZE_OF_ADDRESS (8)
 #define SIZE_OF_INT     (4)
@@ -185,7 +186,7 @@ void gen_lval(Node *node);
 void gen(Node *node);
 void gen_function_variables(Function *function);
 void gen_function(Function *function);
-void error(char *message, char *s);
+void error(char *fmt, ...);
 
 // sema
 int offset_of_variable(Variable *val_info);
