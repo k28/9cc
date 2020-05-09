@@ -10,7 +10,7 @@ int label_ = 0;
 int pos = 0;
 
 int main(int argc, char **argv) {
-    if (argc != 2) {
+    if (argc < 2) {
         fprintf(stderr, "引数の個数が正しくありません\n");
         return 1;
     }
@@ -23,6 +23,15 @@ int main(int argc, char **argv) {
         return 0;
     }
 
+    // 引数 -f の時にファイルを読み込んでコードを実行する
+    char *source = NULL;
+    if (strcmp("-f", argv[1]) == 0) {
+        char *file_path = argv[2];
+        source = read_file(file_path);
+    } else {
+        source = argv[1];
+    }
+
     // 関数定義を入れるVecotr
     functions = new_vector();
 
@@ -33,7 +42,7 @@ int main(int argc, char **argv) {
     global_variables_ = new_map();
 
     // トークナイズ
-    tokenize(argv[1]);
+    tokenize(source);
     // 構文解析
     parse();
     // 値の調整

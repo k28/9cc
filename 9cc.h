@@ -193,6 +193,9 @@ int offset_of_variable(Variable *val_info);
 void walk(Node *node);
 void sema();
 
+// file
+char *read_file(char *path);
+
 // テスト用のコード
 void expect(int line, int expected, int actual);
 void test_vector();

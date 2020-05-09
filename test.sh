@@ -19,6 +19,25 @@ try() {
     fi
 }
 
+try_file() {
+    expected="$1"
+    input="$2"
+
+    ./9cc -f "$input" > tmp.s
+    gcc -static -o tmp tmp.s test.o
+    ./tmp
+    actual="$?"
+
+    if [ "$actual" = "$expected" ];then
+        echo "$input => $actual"
+    else
+        echo ""
+        echo "$input"
+        echo "$expected expected, but got $actual"
+        exit 1
+    fi
+}
+
 try 0   "int main(){0;}"
 try 42  "int main(){42;}"
 try 21  'int main(){5+20-4;}'
@@ -185,6 +204,9 @@ try 1   'int main(){char r; char x; char *y; r = sizeof(x + 3); return r;}'
 try 8   'int main(){char r; char x; char *y; r = sizeof(y + 3); return r;}'
 try 3   'int main(){char x[3]; x[0] = -1; x[1] = 2; int y; y = 4; return x[0] + y;}'
 try 7   'int main(){print_str("Hello World!\n"); return 7;}'
+
+echo "test: source code from file."
+try_file 5 'test/test1.c'
 
 
 echo OK
