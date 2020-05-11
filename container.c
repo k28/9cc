@@ -105,6 +105,28 @@ void error(char *fmt, ...) {
     exit(1);
 }
 
+// 処理中のファイル名
+char *filename;
+
+void error_at(char *loc, char *fmt, ...) {
+    // locが含まれている行の開始地点と終了地点を取得
+    va_list ap;
+    va_start(ap, fmt);
+
+    int max_pos = strlen(source_);
+    int pos = loc - source_;
+    if (pos < 0)
+        pos = 0;
+    if (pos > max_pos)
+        pos = max_pos;
+    fprintf(stderr, "%s\n", source_);
+    fprintf(stderr, "%*s", pos, "");
+    fprintf(stderr, "^ ");
+    vfprintf(stderr, fmt, ap);
+    fprintf(stderr, "\n");
+    exit(1);
+}
+
 void expect(int line, int expected, int actual) {
     if (expected == actual) {
         return;

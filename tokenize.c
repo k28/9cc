@@ -32,7 +32,7 @@ void tokenize(char *p) {
 
         // 演算子, 括弧
         if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '&' || *p == '[' || *p == ']') {
-            Token *token = new_token(*p, p);
+            Token *token = new_token(*p, p, p);
             vec_push(vec, token);
 
             i++;
@@ -42,7 +42,7 @@ void tokenize(char *p) {
 
         // if 文
         if (strncmp(p, "if", 2) == 0) {
-            Token *token = new_token(TK_IF, p);
+            Token *token = new_token(TK_IF, p, p);
             vec_push(vec, token);
             i++;
             p += 2; // 2文字分進める
@@ -51,7 +51,7 @@ void tokenize(char *p) {
 
         // else 文
         if (strncmp(p, "else", 4) == 0) {
-            Token *token = new_token(TK_ELSE, p);
+            Token *token = new_token(TK_ELSE, p, p);
             vec_push(vec, token);
             i++;
             p += 4; // 4文字分進める
@@ -60,7 +60,7 @@ void tokenize(char *p) {
 
         // while 文
         if (strncmp(p, "while", 5) == 0) {
-            Token *token = new_token(TK_WHILE, p);
+            Token *token = new_token(TK_WHILE, p, p);
             vec_push(vec, token);
             i++;
             p += 5; // 5文字分進める
@@ -69,7 +69,7 @@ void tokenize(char *p) {
 
         // for 文
         if (strncmp(p, "for", 3) == 0) {
-            Token *token = new_token(TK_FOR, p);
+            Token *token = new_token(TK_FOR, p, p);
             vec_push(vec, token);
             i++;
             p += 3; // 3文字分進める
@@ -81,7 +81,7 @@ void tokenize(char *p) {
         // returnのあとの文字がトークンを表す文字で無いことを確認する必要がある
         // (他の比較においても同様の事が言える)
         if (strncmp(p, "return", 6) == 0) {
-            Token *token = new_token(TK_RETURN, p);
+            Token *token = new_token(TK_RETURN, p, p);
             vec_push(vec, token);
             i++;
             p += 6;
@@ -90,7 +90,7 @@ void tokenize(char *p) {
 
         // int
         if (strncmp(p, "int", 3) == 0) {
-            Token *token = new_token(TK_INT, p);
+            Token *token = new_token(TK_INT, p, p);
             vec_push(vec, token);
             i++;
             p += 3;
@@ -99,7 +99,7 @@ void tokenize(char *p) {
 
         // char
         if (strncmp(p, "char", 4) == 0) {
-            Token *token = new_token(TK_CHAR, p);
+            Token *token = new_token(TK_CHAR, p, p);
             vec_push(vec, token);
             i++;
             p += 4;
@@ -108,7 +108,7 @@ void tokenize(char *p) {
 
         // sizeof
         if (strncmp(p, "sizeof", 6) == 0) {
-            Token *token = new_token(TK_SIZEOF, p);
+            Token *token = new_token(TK_SIZEOF, p, p);
             vec_push(vec, token);
             i++;
             p += 6;
@@ -128,7 +128,7 @@ void tokenize(char *p) {
             char *str = malloc(char_len + 1);
             memset(str, 0, char_len + 1);
             strncpy(str, pstart, char_len);
-            Token *token = new_token(TK_STRING, str);
+            Token *token = new_token(TK_STRING, str, pstart);
             vec_push(vec, token);
             i++;
 
@@ -148,7 +148,7 @@ void tokenize(char *p) {
             char *variableName = malloc(char_len + 1);
             memset(variableName, 0, char_len + 1);
             strncpy(variableName, pstart, char_len);
-            Token *token = new_token(TK_IDENT, variableName);
+            Token *token = new_token(TK_IDENT, variableName, pstart);
             vec_push(vec, token);
 
             i++;
@@ -164,7 +164,7 @@ void tokenize(char *p) {
             char *relational_name = malloc(relational_name_size + 1);
             memset(relational_name, 0, relational_name_size + 1);
             strncpy(relational_name, p, relational_name_size);
-            Token *token = new_token(TK_RELATIONAL, relational_name);
+            Token *token = new_token(TK_RELATIONAL, relational_name, p);
             vec_push(vec, token);
 
             i++;
@@ -178,7 +178,7 @@ void tokenize(char *p) {
             char *equality_name = malloc(3);
             memset(equality_name, 0, 3);
             strncpy(equality_name, p, 2);
-            Token *token = new_token(TK_EQUALITY, equality_name);
+            Token *token = new_token(TK_EQUALITY, equality_name, p);
             vec_push(vec, token);
 
             i++;
@@ -188,7 +188,7 @@ void tokenize(char *p) {
 
         // 代入
         if (*p == '=') {
-            Token *token = new_token(TK_ASSIGN, p);
+            Token *token = new_token(TK_ASSIGN, p, p);
             vec_push(vec, token);
 
             i++;
@@ -198,7 +198,7 @@ void tokenize(char *p) {
 
         // カンマ
         if (*p == ',') {
-            Token *token = new_token(TK_COMMA, p);
+            Token *token = new_token(TK_COMMA, p, p);
             vec_push(vec, token);
 
             i++;
@@ -208,7 +208,7 @@ void tokenize(char *p) {
 
         // 開きカッコ
         if (*p == '{') {
-            Token *token = new_token(TK_LCBACKET, p);
+            Token *token = new_token(TK_LCBACKET, p, p);
             vec_push(vec, token);
             i++;
             p++;
@@ -216,7 +216,7 @@ void tokenize(char *p) {
         }
         // 閉じカッコ
         if (*p == '}') {
-            Token *token = new_token(TK_RCBACKET, p);
+            Token *token = new_token(TK_RCBACKET, p, p);
             vec_push(vec, token);
             i++;
             p++;
@@ -225,7 +225,7 @@ void tokenize(char *p) {
 
         // 式の終わり
         if (*p == ';') {
-            Token *token = new_token(TK_STMT, p);
+            Token *token = new_token(TK_STMT, p, p);
             vec_push(vec, token);
 
             i++;
@@ -234,7 +234,7 @@ void tokenize(char *p) {
         }
 
         if (isdigit(*p)) {
-            Token *token = new_token_num(p, strtol(p, &p, 10));
+            Token *token = new_token_num(p, strtol(p, &p, 10), p);
             vec_push(vec, token);
 
             i++;
@@ -244,7 +244,7 @@ void tokenize(char *p) {
         fprintf(stderr, "トークナイズできません: %s\n", p);
         exit(1);
     }
-    Token *token = new_token(TK_EOF, p);
+    Token *token = new_token(TK_EOF, p, p);
     vec_push(vec, token);
 
     // tokensで値を保持する

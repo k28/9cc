@@ -50,7 +50,8 @@ enum {
 typedef struct {
     int ty;         // トークンの型
     int val;        // tyがTK_NUMの場合、その値
-    char *input;    // トークン文字列(エラーメッセージ用)
+    char *input;    // トークン文字列A
+    char *loc;      // エラー表示用の文字の場所
 } Token;
 
 enum {
@@ -81,6 +82,7 @@ typedef struct Node {
     char *name;         // tyがND_IDENT,ND_FUNCCALLの場合, 等値の場合に値が入る
     Vector *program;    // tyがif,for,whileの場合条件にマッチした時の処理が入る
     int    label;       // tyがif,for,whileの場合に使うラベル
+    char *loc;          // エラー表示用
 } Node;
 
 typedef struct Function {
@@ -119,6 +121,7 @@ extern Map    *global_variables_;   // グローバル変数を保持するMap
 extern int    label_;               // if文などで使用するラベル番号
 extern int    return_label_;        // return文の飛び先ラベル
 extern int    current_pointer_offset_;// 現在のポインタ演算のオフセット(ただの演算の場合は1になる)
+extern char   *source_;             // 入力プログラム
 
 // 現在読んでいるトークンの場所
 extern int pos;
@@ -137,12 +140,12 @@ char *map_get_key_at_index(Map *map, int index);
 int get_map_size(Map *map);
 
 // parse.c
-Token *new_token(int ty, char *input);
-Token *new_token_num(char *input, int val);
+Token *new_token(int ty, char *input, char *pos);
+Token *new_token_num(char *input, int val, char *pos);
 Token *get_token(int pos);
 
-Node *new_node(int ty, Node *lhs, Node *rhs);
-Node *new_node_num(int val);
+Node *new_node(int ty, Node *lhs, Node *rhs, char *loc);
+Node *new_node_num(int val, char *loc);
 
 Type *new_type(int ty, Type *ptrof);
 
@@ -187,6 +190,7 @@ void gen(Node *node);
 void gen_function_variables(Function *function);
 void gen_function(Function *function);
 void error(char *fmt, ...);
+void error_at(char *loc, char *fmt, ...);
 
 // sema
 int offset_of_variable(Variable *val_info);

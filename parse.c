@@ -87,19 +87,25 @@
 Map *variables;
 
 // 文字Tokenを作成する
-Token *new_token(int ty, char *input) {
+//
+// ty: Type
+// input: 入力
+// loc: エラー出力用
+Token *new_token(int ty, char *input, char *loc) {
     Token *token = malloc(sizeof(Token));
     token->ty = ty;
     token->input = input;
+    token->loc = loc;
     return token;
 }
 
 // 数値Tokenを作成する
-Token *new_token_num(char *input, int val) {
+Token *new_token_num(char *input, int val, char *loc) {
     Token *token = malloc(sizeof(Token));
     token->ty = TK_NUM;
     token->input = input;
     token->val = val;
+    token->loc = loc;
     return token;
 }
 
@@ -115,19 +121,21 @@ Token *get_token(int pos) {
 }
 
 // Nodeを作成する
-Node *new_node(int ty, Node *lhs, Node *rhs) {
+Node *new_node(int ty, Node *lhs, Node *rhs, char *loc) {
     Node *node = malloc(sizeof(Node));
     node->ty = ty;
     node->lhs = lhs;
     node->rhs = rhs;
+    node->loc = loc;
     return node;
 }
 
 // 数値Nodeを作成する
-Node *new_node_num(int val) {
+Node *new_node_num(int val, char *loc) {
     Node *node = malloc(sizeof(Node));
     node->ty = ND_NUM;
     node->val = val;
+    node->loc = loc;
     return node;
 }
 
@@ -153,7 +161,7 @@ int consume(int ty) {
 // Nodeの型を見てsizeofで返す値を決める
 int sizeof_node(Node *node) {
     if (node == NULL) {
-        error("定義されていないデータ型です:%s", node->name);
+        error_at(node->loc, "定義されていないデータ型です");
     }
 
     if (node->ty == ND_NUM) return SIZE_OF_INT;
@@ -167,7 +175,7 @@ int sizeof_node(Node *node) {
         if (val_info->type->ty == ARRAY) return val_info->type->array_size;
 
         // 多分ここにきたら実装もれ
-        error("定義されていない変数型です:", node->name);
+        error_at(node->loc, "定義されていない変数型です");
     }
 
     if (node->ty == ND_DEREFERENCE) return SIZE_OF_INT;
@@ -182,35 +190,36 @@ Node *term() {
     if (consume('(')) {
         Node *node = assign();
        if (!consume(')')) {
-           error("開き括弧に対応する閉じ括弧がありません: %s", get_token(pos)->input);
+           error_at(get_token(pos)->loc, "開き括弧に対応する閉じ括弧がありません");
        }
 
        return node;
     }
 
-    if (get_token(pos)->ty == '*') {
+    Token *token = get_token(pos);
+    if (token->ty == '*') {
         // デリファレンス演算子
         // 中の構文を右辺値としてコンパイルする
         pos++;
         Node *rhs_node = term();
-        Node *node = new_node(ND_DEREFERENCE, NULL, rhs_node);
+        Node *node = new_node(ND_DEREFERENCE, NULL, rhs_node, token->loc);
         return node;
     }
 
-    if (get_token(pos)->ty == '&') {
+    if (token->ty == '&') {
         // リファレンス演算子
         // 中の構文を右辺値としてコンパイルする
         pos++;
         Node *rhs_node = term();
-        Node *node = new_node(ND_REFERENCE, NULL, rhs_node);
+        Node *node = new_node(ND_REFERENCE, NULL, rhs_node, token->loc);
         return node;
     }
 
-    if (get_token(pos)->ty == TK_NUM) {
-        return new_node_num(get_token(pos++)->val);
+    if (token->ty == TK_NUM) {
+        return new_node_num(get_token(pos++)->val, token->loc);
     }
 
-    if (get_token(pos)->ty == TK_STRING) {
+    if (token->ty == TK_STRING) {
         // 文字リテラル
         // 文字列リテラルを入れておくVectorに全て入れておく
         char *val = get_token(pos++)->input;
@@ -220,13 +229,13 @@ Node *term() {
         vec_push(strings_, string);
 
         // NodeにはVectorに入れたStringのIndexを設定しておく
-        Node *node = new_node(ND_STRING, NULL, NULL);
+        Node *node = new_node(ND_STRING, NULL, NULL, token->loc);
         node->name = val;
         node->val  = string->index;
         return node;
     }
 
-    if (get_token(pos)->ty == TK_IDENT) {
+    if (token->ty == TK_IDENT) {
         // 名称を取得しておく
         char *name = get_token(pos++)->input;
         // IDENTの変数定義を取得
@@ -236,20 +245,20 @@ Node *term() {
             val_info = map_get(global_variables_, name);
             if (val_info) {
                 // グローバル変数ノードとして追加
-                Node *node = new_node(ND_GLOBAL_VAL, NULL, NULL);
+                Node *node = new_node(ND_GLOBAL_VAL, NULL, NULL, token->loc);
                 node->name = name;
                 return node;
             }
-            error("定義されていない変数です: %s", name);
+            error_at(token->loc, "定義されていない変数です");
         }
 
         // 変数
-        Node *node = new_node(ND_IDENT, NULL, NULL);
+        Node *node = new_node(ND_IDENT, NULL, NULL, token->loc);
         node->name = name;
         return node;
     }
 
-    error("数値でも開き括弧でもないトークンです: %s", get_token(pos)->input);
+    error_at(get_token(pos)->loc, "数値でも開き括弧でもないトークンです");
     return NULL;
 }
 
@@ -262,7 +271,8 @@ Node *unary() {
 
     if (consume('-')) {
         // -x を 0 - x に置き換え
-        return new_node('-', new_node_num(0), term());
+        char *loc = get_token(pos-1)->loc;
+        return new_node('-', new_node_num(0, loc), term(), loc);
     }
 
     if (consume(TK_SIZEOF)) {
@@ -270,10 +280,12 @@ Node *unary() {
         Node *node = unary();
         // Nodeの型を見て、値を数値に置き換える
         int size = sizeof_node(node);
-        return new_node_num(size);
+        char *loc = get_token(pos-1)->loc;
+        return new_node_num(size, loc);
     }
 
-    if ((get_token(pos)->ty == TK_NUM || get_token(pos)->ty == TK_IDENT)
+    Token *token = get_token(pos);
+    if ((token->ty == TK_NUM || token->ty == TK_IDENT)
         && get_token(pos+1)->ty == '[') {
         //  配列の添字は以下のように変換する
         //  x[y] => *(x + y)
@@ -281,11 +293,11 @@ Node *unary() {
         pos++;
         Node *second = assign();
         if(!consume(']')) {
-            error("配列の添字の定義が不正です: %s", get_token(pos)->input);
+            error_at(get_token(pos)->loc, "配列の添字の定義が不正です");
         }
 
-        Node *add_node = new_node('+', first, second);
-        Node *node = new_node(ND_DEREFERENCE, NULL, add_node);
+        Node *add_node = new_node('+', first, second, token->loc);
+        Node *node = new_node(ND_DEREFERENCE, NULL, add_node, token->loc);
         return node;
     }
 
@@ -294,19 +306,20 @@ Node *unary() {
 
 // funcを生成 (関数呼び出し)
 Node *func() {
-    if (get_token(pos)->ty == TK_IDENT && consume_not_add(pos + 1, '(')) {
+    Token *token = get_token(pos);
+    if (token->ty == TK_IDENT && consume_not_add(pos + 1, '(')) {
         // 名称を取得
         char *name = get_token(pos++)->input;
         pos++;  // 前カッコ "(" 分進める
         // 引数の数を計測するための変数をpush
         int count_of_arguments = 0;
-        Node *node = new_node(ND_FUNCCALL, NULL, argument(&count_of_arguments));
+        Node *node = new_node(ND_FUNCCALL, NULL, argument(&count_of_arguments), token->loc);
         node->name = name;
         // valに引数の数を入れる
         node->val = count_of_arguments;
 
         if (!consume(')')) {
-            error("関数呼び出しに対応する 開き括弧に対応する閉じ括弧がありません: %s", get_token(pos)->input);
+            error_at(get_token(pos)->loc, "関数呼び出しに対応する 開き括弧に対応する閉じ括弧がありません");
         }
         return node;
     }
@@ -319,10 +332,11 @@ Node *mul() {
     Node *node = func();
     
     for (;;) {
+        Token *token = get_token(pos);
         if (consume('*')) {
-            node = new_node('*', node, func());
+            node = new_node('*', node, func(), token->loc);
         } else if (consume('/')) {
-            node = new_node('/', node, func());
+            node = new_node('/', node, func(), token->loc);
         } else {
             return node;
         }
@@ -334,10 +348,11 @@ Node *add() {
     Node *node = mul();
 
     for (;;) {
+        Token *token = get_token(pos);
         if (consume('+')) {
-            node = new_node('+', node, mul());
+            node = new_node('+', node, mul(), token->loc);
         } else if (consume('-')) {
-            node = new_node('-', node, mul());
+            node = new_node('-', node, mul(), token->loc);
         } else {
             return node;
         }
@@ -349,9 +364,10 @@ Node *relational() {
     Node *node = add();
 
     for (;;) {
-        if (get_token(pos)->ty == TK_RELATIONAL) {
+        Token *token = get_token(pos);
+        if (token->ty == TK_RELATIONAL) {
             char *name = get_token(pos++)->input;
-            node = new_node(ND_RELATIONAL, node, add());
+            node = new_node(ND_RELATIONAL, node, add(), token->loc);
             node->name = name;
         } else {
             return node;
@@ -364,9 +380,10 @@ Node *equality() {
     Node *node = relational();
 
     for (;;) {
-        if (get_token(pos)->ty == TK_EQUALITY) {
+        Token *token = get_token(pos);
+        if (token->ty == TK_EQUALITY) {
             char *name = get_token(pos++)->input;
-            node = new_node(ND_EQUALITY, node, relational());
+            node = new_node(ND_EQUALITY, node, relational(), token->loc);
             node->name = name;
         } else {
             return node;
@@ -379,8 +396,9 @@ Node *assign() {
     Node *node = equality();
 
     for (;;) {
+        Token *token = get_token(pos);
         if (consume(TK_ASSIGN)) {
-            node = new_node(ND_ASSIGN, node, equality());
+            node = new_node(ND_ASSIGN, node, equality(), token->loc);
         } else {
             return node;
         }
@@ -388,9 +406,10 @@ Node *assign() {
 }
 
 Node *return_node() {
+    Token *token = get_token(pos);
     if (consume(TK_RETURN)) {
         // return statement
-        Node *node = new_node(ND_RETURN, NULL, assign());
+        Node *node = new_node(ND_RETURN, NULL, assign(), token->loc);
         return node;
     }
 
@@ -406,9 +425,10 @@ Node *argument(int *count_of_arguments) {
     *count_of_arguments += 1;
     Node *node = equality();
     for (;;) {
+        Token *token = get_token(pos);
         if (consume(TK_COMMA)) {
             *count_of_arguments += 1;
-            node = new_node(ND_ARGUMENT, node, equality());
+            node = new_node(ND_ARGUMENT, node, equality(), token->loc);
         } else {
             return node;
         }
@@ -417,8 +437,9 @@ Node *argument(int *count_of_arguments) {
 
 // if文のNodeを生成
 Node *ifstmt() {
+    Token *token = get_token(pos);
     if (!consume('(')) {
-        error("if文の開き括弧がありません. :%s", get_token(pos)->input);
+        error_at(get_token(pos)->loc, "if文の開き括弧がありません.");
     }
 
     // 条件式
@@ -426,7 +447,7 @@ Node *ifstmt() {
     Node *condition_node = expr();
 
     if (!consume(')')) {
-        error("if文の閉じ括弧がありません. :%s", get_token(pos)->input);
+        error_at(get_token(pos)->loc, "if文の閉じ括弧がありません.");
     }
 
     Vector *body_vec = NULL;
@@ -435,7 +456,7 @@ Node *ifstmt() {
     if (consume(TK_LCBACKET)) {
         body_vec = func_body();
         if (!consume(TK_RCBACKET)) {
-            error("if文の終わりが不正です. \"}\"でありません: %s", get_token(pos)->input);
+            error_at(get_token(pos)->loc, "if文の終わりが不正です. \"}\"でありません");
         }
     } else {
         // 1文のみのBody
@@ -444,7 +465,7 @@ Node *ifstmt() {
         vec_push(body_vec, assign_node);
         // 最後はTK_STMT(;)のはず
         if (!consume(TK_STMT)) {
-            error("if文の終わりが不正です. \";\"でありません: %s", get_token(pos)->input);
+            error_at(get_token(pos)->loc, "if文の終わりが不正です. \";\"でありません");
         }
     }
 
@@ -455,7 +476,7 @@ Node *ifstmt() {
     }
 
     // IFのNodeを作成
-    Node *node = new_node(ND_IF, condition_node, else_node);
+    Node *node = new_node(ND_IF, condition_node, else_node, token->loc);
     node->program = body_vec;
     node->label = label_++;
 
@@ -464,15 +485,16 @@ Node *ifstmt() {
 
 // while文のノードを作成
 Node *while_stmt() {
+    Token *token = get_token(pos);
     if (!consume('(')) {
-        error("while文の開き括弧がありません. :%s", get_token(pos)->input);
+        error_at(get_token(pos)->loc, "while文の開き括弧がありません.");
     }
 
     // 条件式
     Node *condition_node = equality();
 
     if (!consume(')')) {
-        error("while文の閉じ括弧がありません. :%s", get_token(pos)->input);
+        error_at(get_token(pos)->loc,"while文の閉じ括弧がありません.");
     }
 
     Vector *body_vec = NULL;
@@ -481,7 +503,7 @@ Node *while_stmt() {
     if (consume(TK_LCBACKET)) {
         body_vec = func_body();
         if (!consume(TK_RCBACKET)) {
-            error("while文の終わりが不正です. \"}\"でありません: %s", get_token(pos)->input);
+            error_at(get_token(pos)->loc, "while文の終わりが不正です. \"}\"でありません");
         }
     } else {
         // 1文のみのBody
@@ -490,12 +512,12 @@ Node *while_stmt() {
         vec_push(body_vec, assign_node);
         // 最後はTK_STMT(;)のはず
         if (!consume(TK_STMT)) {
-            error("while文の終わりが不正です. \";\"でありません: %s", get_token(pos)->input);
+            error_at(get_token(pos)->loc, "while文の終わりが不正です. \";\"でありません");
         }
     }
 
     // WHILEのNodeを作成
-    Node *node = new_node(ND_WHILE, condition_node, NULL);
+    Node *node = new_node(ND_WHILE, condition_node, NULL, token->loc);
     node->program = body_vec;
     node->label = label_++;
 
@@ -503,8 +525,9 @@ Node *while_stmt() {
 }
 
 Node *for_stmt() {
+    Token *token = get_token(pos);
     if (!consume('(')) {
-        error("for文の開き括弧がありません. :%s", get_token(pos)->input);
+        error_at(get_token(pos)->loc, "for文の開き括弧がありません.");
     }
 
     Node *first_assign = NULL;
@@ -516,7 +539,7 @@ Node *for_stmt() {
         // assign
         first_assign = assign();
         if (!consume(TK_STMT)) {
-            error("for文 括弧内の定義が不正です. :%s", get_token(pos)->input);
+            error_at(get_token(pos)->loc, "for文 括弧内の定義が不正です.");
         }
     }
 
@@ -524,7 +547,7 @@ Node *for_stmt() {
         // 条件式
         condition_node = equality();
         if (!consume(TK_STMT)) {
-            error("for文 括弧内の定義が不正です. :%s", get_token(pos)->input);
+            error_at(get_token(pos)->loc, "for文 括弧内の定義が不正です.");
         }
     }
 
@@ -532,12 +555,12 @@ Node *for_stmt() {
         // add
         last_assign = assign();
         if (!consume(TK_STMT)) {
-            error("for文 括弧内の定義が不正です. :%s", get_token(pos)->input);
+            error_at(get_token(pos)->loc, "for文 括弧内の定義が不正です.");
         }
     }
 
     if (!consume(')')) {
-        error("for文の閉じ括弧がありません. :%s", get_token(pos)->input);
+        error_at(get_token(pos)->loc, "for文の閉じ括弧がありません.");
     }
 
     // bodyをパース
@@ -545,7 +568,7 @@ Node *for_stmt() {
     if (consume(TK_LCBACKET)) {
         body_vec = func_body();
         if (!consume(TK_RCBACKET)) {
-            error("for文の終わりが不正です. \"}\"でありません: %s", get_token(pos)->input);
+            error_at(get_token(pos)->loc, "for文の終わりが不正です. \"}\"でありません");
         }
     }
 
@@ -557,7 +580,7 @@ Node *for_stmt() {
 
     // FORのNodeを作成
     // FORのNodeは左辺に初期設定, 右辺に条件を入れる
-    Node *node = new_node(ND_FOR, first_assign, condition_node);
+    Node *node = new_node(ND_FOR, first_assign, condition_node, token->loc);
     node->program = body_vec;
     node->label = label_++;
 
@@ -575,25 +598,28 @@ Node *def_variable(int ty) {
         type = ptr_type;
     }
 
-    if (get_token(pos)->ty == TK_IDENT) {
+    Token *token = get_token(pos);
+    if (token->ty == TK_IDENT) {
         // 名称を取得しておく
-        char *name = get_token(pos++)->input;
+        char *name = token->input;
+        // 名称分posを進める
+        pos++;
         // 変数
-        Node *node = new_node(ND_IDENT, NULL, NULL);
+        Node *node = new_node(ND_IDENT, NULL, NULL, token->loc);
         node->name = name;
 
         if (consume('[')) {
             // 配列定義
             Token *num_token = get_token(pos);
             if (num_token->ty != TK_NUM) {
-                error("配列の定義が不正です. %s", get_token(pos)->input);
+                error_at(get_token(pos)->loc, "配列の定義が不正です.");
             }
             Type *ptr_type = new_type(ARRAY, type);
             ptr_type->array_size = num_token->val;  // 配列のサイズを設定
             type = ptr_type;
             pos++;
             if (consume(']') == 0) {
-                error("配列の定義が不正です. 閉じ括弧がありません. %s", get_token(pos)->input);
+                error_at(get_token(pos)->loc, "配列の定義が不正です. 閉じ括弧がありません.");
             }
         }
 
@@ -611,24 +637,25 @@ Node *def_variable(int ty) {
 
         // 最後はTK_STMT(;)のはず
         if (!consume(TK_STMT)) {
-            error("変数定義の終わりが不正です. \";\"でありません: %s", get_token(pos)->input);
+            error_at(get_token(pos)->loc, "変数定義の終わりが不正です. \";\"でありません.");
         }
 
         return node;
     }
 
-    error("変数定義が不正です. : %s", get_token(pos)->input);
+    error_at(get_token(pos)->loc, "変数定義が不正です.");
     return NULL;
 }
 
 // block分のNodeを生成
 Node *blockstmt() {
+    Token *token = get_token(pos);
     Vector *body_vec = func_body();
     if (!consume(TK_RCBACKET)) {
-        error("if文の終わりが不正です. \"}\"でありません: %s", get_token(pos)->input);
+        error_at(get_token(pos)->loc, "if文の終わりが不正です. \"}\"でありません.");
     }
 
-    Node *node = new_node(ND_BLOCK, NULL, NULL);
+    Node *node = new_node(ND_BLOCK, NULL, NULL, token->loc);
     node->program = body_vec;
 
     return node;
@@ -683,7 +710,7 @@ Node *stmt() {
 
     // 最後はTK_STMT(;)のはず
     if (!consume(TK_STMT)) {
-        error("式の終わりが不正です. \";\"でありません: %s", get_token(pos)->input);
+        error_at(get_token(pos)->loc, "式の終わりが不正です. \";\"でありません.");
     }
 
     return node;
@@ -721,7 +748,8 @@ Vector *def_argument(char *func_name) {
                 type = ptr_type;
             }
 
-            if(get_token(pos)->ty == TK_IDENT) {
+            Token *token = get_token(pos);
+            if(token->ty == TK_IDENT) {
                 // 変数名
                 char *name = get_token(pos++)->input;
                 // 関数定義の変数はローカル変数と同じ扱いにする
@@ -732,7 +760,7 @@ Vector *def_argument(char *func_name) {
                     val_info = new_variable(type, stack_offset);
                     map_put(variables, name, val_info);
 
-                    Node *node = new_node(ND_IDENT, NULL, NULL);
+                    Node *node = new_node(ND_IDENT, NULL, NULL, token->loc);
                     node->name = name;
                     vec_push(arguments, node);
                 }
@@ -749,7 +777,7 @@ Vector *def_argument(char *func_name) {
         }
 
         // ここに来たら関数の引数定義としておかしい
-        error("引数定義が不正です。: %s", func_name);
+        error_at(get_token(pos)->loc, "引数定義が不正です。");
     }
 
     return arguments;
@@ -772,7 +800,7 @@ Function *def_function() {
 
         // 引数部分の定義の後は {}で囲まれたBody部
         if (!consume(TK_LCBACKET)) {
-            error("関数定義に対応する 開きブランケットがありません: %s", name);
+            error_at(get_token(pos)->loc, "関数定義に対応する 開きブランケットがありません");
         }
 
         // Bodyのパース
@@ -787,7 +815,7 @@ Function *def_function() {
         function->label = label_++;
 
         if (!consume(TK_RCBACKET)) {
-            error("関数定義に対応する 閉じブランケットがありません: %s", name);
+            error_at(get_token(pos)->loc, "関数定義に対応する 閉じブランケットがありません");
         }
         return function;
     // }
@@ -813,14 +841,14 @@ void def_global_variable(int ty) {
             // 配列定義
             Token *num_token = get_token(pos);
             if (num_token->ty != TK_NUM) {
-                error("配列の定義が不正です. %s", get_token(pos)->input);
+                error_at(get_token(pos)->loc, "配列の定義が不正です.");
             }
             Type *ptr_type = new_type(ARRAY, type);
             ptr_type->array_size = num_token->val;  // 配列のサイズを設定
             type = ptr_type;
             pos++;
             if (consume(']') == 0) {
-                error("配列の定義が不正です. 閉じ括弧がありません. %s", get_token(pos)->input);
+                error_at(get_token(pos)->loc, "配列の定義が不正です. 閉じ括弧がありません.");
             }
         }
 
@@ -831,7 +859,7 @@ void def_global_variable(int ty) {
 
     // 最後はTK_STMT(;)のはず
     if (!consume(TK_STMT)) {
-        error("変数定義の終わりが不正です. \";\"でありません: %s", get_token(pos)->input);
+        error_at(get_token(pos)->loc, "変数定義の終わりが不正です. \";\"でありません");
     }
 }
 
@@ -860,7 +888,7 @@ void parse() {
                 def_global_variable(CHAR);
             }
         } else {
-            error("関数またはグローバル変数の定義が不正です :%s\n", get_token(pos)->input);
+            error_at(get_token(pos)->loc, "関数またはグローバル変数の定義が不正です");
         }
     }
 }

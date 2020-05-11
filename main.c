@@ -5,6 +5,7 @@ Vector *functions;
 Vector *strings_;
 Map    *global_variables_;
 int label_ = 0;
+char *source_;
 
 // 現在読んでいるトークンの場所
 int pos = 0;
@@ -24,12 +25,12 @@ int main(int argc, char **argv) {
     }
 
     // 引数 -f の時にファイルを読み込んでコードを実行する
-    char *source = NULL;
+    source_ = NULL;
     if (strcmp("-f", argv[1]) == 0) {
         char *file_path = argv[2];
-        source = read_file(file_path);
+        source_ = read_file(file_path);
     } else {
-        source = argv[1];
+        source_ = argv[1];
     }
 
     // 関数定義を入れるVecotr
@@ -42,7 +43,7 @@ int main(int argc, char **argv) {
     global_variables_ = new_map();
 
     // トークナイズ
-    tokenize(source);
+    tokenize(source_);
     // 構文解析
     parse();
     // 値の調整
