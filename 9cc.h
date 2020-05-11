@@ -122,6 +122,7 @@ extern int    label_;               // if文などで使用するラベル番号
 extern int    return_label_;        // return文の飛び先ラベル
 extern int    current_pointer_offset_;// 現在のポインタ演算のオフセット(ただの演算の場合は1になる)
 extern char   *source_;             // 入力プログラム
+extern char   *filename_;            // 入力プログラムのファイル名
 
 // 現在読んでいるトークンの場所
 extern int pos;

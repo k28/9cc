@@ -6,6 +6,7 @@ Vector *strings_;
 Map    *global_variables_;
 int label_ = 0;
 char *source_;
+char *filename_;
 
 // 現在読んでいるトークンの場所
 int pos = 0;
@@ -29,8 +30,10 @@ int main(int argc, char **argv) {
     if (strcmp("-f", argv[1]) == 0) {
         char *file_path = argv[2];
         source_ = read_file(file_path);
+        filename_ = file_path;
     } else {
         source_ = argv[1];
+        filename_ = NULL;
     }
 
     // 関数定義を入れるVecotr
