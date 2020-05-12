@@ -19,7 +19,7 @@ test_code='int main(){char *a; a = "Hello World!\n"; print_str(a); print_str("Al
 #test_code='int hoge(){return 3;} int main(){return hoge();}'
 
 ./9cc "${test_code}" > tmp.s
-gcc -static -o tmp tmp.s test.o
+gcc -static -o tmp tmp.s test-tmp.o
 
 ./tmp
 actual="$?"

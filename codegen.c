@@ -324,7 +324,7 @@ void gen(Node *node) {
         for (int i = 0; i < node->program->len; i++) {
             gen(node->program->data[i]);
         }
-        printf("  je  .Lend%03d\n",node->label);
+        printf("  jmp .Lend%03d\n",node->label);
 
         printf(".Lelse%03d:\n",node->label);
         if (node->rhs) {

@@ -3,6 +3,8 @@
 // テスト用のファイル
 // 9ccとリンクするけど、最終的には削除するかも
 int foo() { printf("OK\n"); return 0; }
+void print_ok(){printf("OK\n");}
+void print_ng(){printf("NG\n");}
 int bar(int x, int y) { printf("OK (%d)\n", (x + y)); return (x + y);}
 int print_int(int x) {printf("%d\n",x); return 0;}
 int print_str(char *x) {printf("%s",x); return 0;}

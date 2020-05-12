@@ -5,7 +5,7 @@ try() {
     input="$2"
 
     ./9cc "$input" > tmp.s
-    gcc -static -o tmp tmp.s test.o
+    gcc -static -o tmp tmp.s test-tmp.o
     ./tmp
     actual="$?"
 
@@ -24,7 +24,7 @@ try_file() {
     input="$2"
 
     ./9cc -f "$input" > tmp.s
-    gcc -static -o tmp tmp.s test.o
+    gcc -static -o tmp tmp.s test-tmp.o
     ./tmp
     actual="$?"
 
@@ -37,6 +37,11 @@ try_file() {
         exit 1
     fi
 }
+
+try 1   'int main(){int x; x = 1; if (x){return 1;} return 2;}'
+try 2   'int main(){int x; x = 0; if (x){return 1;} return 2;}'
+try 2   'int main(){int x; x = 1; if (x){ x = x + 1;} else {x = x + 2;} return x;}'
+try 1   'int main(){int x; x = 1; if (x){return 1;} else {return 3;}}'
 
 try 0   "int main(){0;}"
 try 42  "int main(){42;}"
@@ -80,10 +85,10 @@ try 2   'int main(){int a; a = 3; if(a){a = 2;} a;}'
 try 0   'int main(){int a; a = 0; if(a){a = 2;} a;}'
 try 7   'int main(){int a; a = 0; if(a){a = 2;}else{a = 7;} a;}'
 try 7   'int main(){int a; a = 0; if(a){a = 2;}else a = 7; a;}'
-try 5   'int main(){int a; a = 2; if(a){a = 2;}else if (a == 2){a = 5;} a;}'
+try 0   'int main(){int a; a = 0; if(a){a = 2;}else if (a == 2){a = 5;} a;}'
 try 2   'int main(){int a; a = 2; if(a){a = 2;}else if (a == 0){a = 5;} a;}'
-try 3   'int main(){int a; a = 2; if(a){a = 2;}else if (a == 0){a = 5;} else {a = 3;}  a;}'
-try 7   'int main(){int a; a = 2; if(a){a = 2;}else if (a == 0){a = 5;} else {a = 3; return 7;}  a;}'
+try 3   'int main(){int a; a = 2; if(a == 1){a = 2;}else if (a == 0){a = 5;} else {a = 3;}  a;}'
+try 2   'int main(){int a; a = 2; if(a){a = 2;}else if (a == 0){a = 5;} else {a = 3; return 7;}  a;}'
 try 2   'int hoge(){1;} int main(){int a; a = 0; if(hoge()){a = 2;} a;}'
 try 0   'int hoge(){0;} int main(){int a; a = 0; if(hoge()){a = 2;} a;}'
 try 2   'int main(){int a; a = 0; if(a == 0){a = 2;} a;}'
