@@ -30,6 +30,24 @@ void tokenize(char *p) {
             continue;
         }
 
+        // 行コメントをスキップ
+        if (strncmp(p, "//", 2) == 0) {
+            p += 2;
+            while(*p != '\n')
+                p++;
+            continue;
+        }
+
+        // ブロックコメントをスキップ
+        if (strncmp(p, "/*", 2) == 0) {
+            // strstrは文字列を探して、見つかれば先頭ポインタ, 見つからなけばNULLを返す
+            char *q = strstr(p + 2, "*/"); 
+            if (!q)
+                error_at(p, "コメントが閉じられていません");
+            p = q + 2;
+            continue;
+        }
+
         // 演算子, 括弧
         if (*p == '+' || *p == '-' || *p == '*' || *p == '/' || *p == '(' || *p == ')' || *p == '&' || *p == '[' || *p == ']') {
             Token *token = new_token(*p, p, p);
