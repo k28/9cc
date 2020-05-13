@@ -132,6 +132,7 @@ extern int pos;
 Vector *new_vector();
 Variable *new_variable(Type *type, int offset); // container.c
 void vec_push(Vector *vec, void *elem);
+void vec_remove(Vector *vec, int pos);
 
 Map *new_map();
 void map_put(Map *map, char *key, void *val);
@@ -144,6 +145,7 @@ int get_map_size(Map *map);
 Token *new_token(int ty, char *input, char *pos);
 Token *new_token_num(char *input, int val, char *pos);
 Token *get_token(int pos);
+void remove_token(int pos);
 
 Node *new_node(int ty, Node *lhs, Node *rhs, char *loc);
 Node *new_node_num(int val, char *loc);
@@ -192,6 +194,9 @@ void gen_function_variables(Function *function);
 void gen_function(Function *function);
 void error(char *fmt, ...);
 void error_at(char *loc, char *fmt, ...);
+
+// prepeocess
+void preprocess();
 
 // sema
 int offset_of_variable(Variable *val_info);

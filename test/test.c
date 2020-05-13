@@ -1,4 +1,6 @@
 
+#define MACRO (1)
+
 int variable_int() {
     int x;
     int y;

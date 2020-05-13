@@ -47,6 +47,8 @@ int main(int argc, char **argv) {
 
     // トークナイズ
     tokenize(source_);
+    // プリプロセス
+    preprocess();
     // 構文解析
     parse();
     // 値の調整

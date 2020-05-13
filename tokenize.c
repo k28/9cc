@@ -24,6 +24,16 @@ void tokenize(char *p) {
     Vector *vec = new_vector();
     int i = 0;
     while (*p) {
+        // マクロを取得
+        if (*p == '#') {
+            Token *token = new_token(*p, p, p);
+            vec_push(vec, token);
+            // TODO 複数行マクロに対応する
+            while(*p != '\n')
+                p++;
+            continue;
+        }
+
         // 空白文字をスキップ
         if (isspace(*p)) {
             p++;

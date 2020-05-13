@@ -22,6 +22,21 @@ void vec_push(Vector *vec, void *elem) {
     vec->data[vec->len++] = elem;
 }
 
+// vecからposの物を削除する
+void vec_remove(Vector *vec, int pos) {
+    if ((vec->len - 1) < pos) {
+        fprintf(stderr, "error : index out of bounds %d", pos);
+        exit(1);
+    }
+
+    // posから後ろのデータを前に詰める
+    int len = vec->len;
+    for (int i = pos; i < len - 1; i++) {
+        vec->data[i] = vec->data[i + 1];
+    }
+    vec->len -= 1;
+}
+
 // 新しいMapを作成する
 Map *new_map() {
     Map *map = malloc(sizeof(Map));
@@ -184,6 +199,16 @@ void test_vector() {
     expect(__LINE__, 0  , (int)*((int *)vec->data[0 ]));
     expect(__LINE__, 50 , (int)*((int *)vec->data[50]));
     expect(__LINE__, 99 , (int)*((int *)vec->data[99]));
+
+    // 50番目を削除
+    vec_remove(vec, 50);
+    expect(__LINE__, 99, vec->len);
+    expect(__LINE__, 0  , (int)*((int *)vec->data[0 ]));
+    expect(__LINE__, 48 , (int)*((int *)vec->data[48]));
+    expect(__LINE__, 49 , (int)*((int *)vec->data[49]));
+    expect(__LINE__, 51 , (int)*((int *)vec->data[50]));
+    expect(__LINE__, 52 , (int)*((int *)vec->data[51]));
+    expect(__LINE__, 99 , (int)*((int *)vec->data[98]));
 
     printf("test_vector OK\n");
 }

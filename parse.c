@@ -120,6 +120,11 @@ Token *get_token(int pos) {
     return token;
 }
 
+// vectorからTokenを削除する
+void remove_token(int pos) {
+    vec_remove(tokens, pos);
+}
+
 // Nodeを作成する
 Node *new_node(int ty, Node *lhs, Node *rhs, char *loc) {
     Node *node = malloc(sizeof(Node));
