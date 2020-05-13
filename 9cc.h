@@ -55,6 +55,20 @@ typedef struct {
 } Token;
 
 enum {
+    MC_DEFINE,      // #define
+    MC_IFDEF,       // #ifdef xxx
+    MC_IF,          // #if
+    MC_INCLUDE,     // #include xxx
+};
+
+// マクロの型
+typedef struct {
+    int ty;         // マクロの型
+    char *name;     // マクロの名称
+    char *val;      // マクロの値
+} Macro;
+
+enum {
     ND_NUM = 256,   // 整数のノードの型
     ND_IDENT,       // 識別子
     ND_GLOBAL_VAL,  // グローバル変数
@@ -181,7 +195,7 @@ void def_global_variable();
 void parse();
 
 int is_ident_word(char *p);
-void tokenize(char *p);
+void tokenize(char *p, Vector **dest);
 
 int size_of_variale(Variable *variable);
 int address_offset(Variable *variable, char* name);

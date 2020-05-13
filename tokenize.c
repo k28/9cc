@@ -19,8 +19,10 @@ int is_ident_word(char *p) {
     return  1;
 }
 
-// pが指している文字列をトークンに分割してtokensに保存する
-void tokenize(char *p) {
+// pが指している文字列をトークンに分割する
+//  p : 文字列
+//  dest: 分割したトークンの保存先
+void tokenize(char *p, Vector **dest) {
     Vector *vec = new_vector();
     int i = 0;
     while (*p) {
@@ -276,5 +278,5 @@ void tokenize(char *p) {
     vec_push(vec, token);
 
     // tokensで値を保持する
-    tokens = vec;
+    *dest = vec;
 }

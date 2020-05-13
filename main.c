@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
     global_variables_ = new_map();
 
     // トークナイズ
-    tokenize(source_);
+    tokenize(source_, &tokens);
     // プリプロセス
     preprocess();
     // 構文解析
