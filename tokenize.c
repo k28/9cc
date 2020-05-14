@@ -168,7 +168,7 @@ void tokenize(char *p, Vector **dest) {
 
         // 変数(識別子) もしくは 関数呼び出し
         // 複数変数の文字列に対応するため、TK_IDENTに変数名を入れる
-        if ('a' <= *p && *p <= 'z') {
+        if (('a' <= *p && *p <= 'z') || ('A' <= *p && *p <= 'Z')) {
             char *pstart = p;
             int char_len = 0;
             while (is_ident_word(p) == 0) {

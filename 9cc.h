@@ -65,7 +65,8 @@ enum {
 typedef struct {
     int ty;         // マクロの型
     char *name;     // マクロの名称
-    char *val;      // マクロの値
+    Vector *arguments; // マクロの引数
+    Vector *val;      // マクロの値
 } Macro;
 
 enum {
