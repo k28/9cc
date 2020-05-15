@@ -63,10 +63,10 @@ enum {
 
 // マクロの型
 typedef struct {
-    int ty;         // マクロの型
-    char *name;     // マクロの名称
+    int ty;            // マクロの型
+    char *name;        // マクロの名称
     Vector *arguments; // マクロの引数
-    Vector *val;      // マクロの値
+    Vector *val;       // マクロの値
 } Macro;
 
 enum {
@@ -147,7 +147,8 @@ extern int pos;
 Vector *new_vector();
 Variable *new_variable(Type *type, int offset); // container.c
 void vec_push(Vector *vec, void *elem);
-void vec_remove(Vector *vec, int pos);
+void vec_insert(Vector *vec, void *elem, int index);
+void vec_remove(Vector *vec, int index);
 
 Map *new_map();
 void map_put(Map *map, char *key, void *val);

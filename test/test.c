@@ -1,12 +1,13 @@
 
-#define MACRO (1)
+#define MACRO (7)
+#define PRINT_MACRO(x, y) printf("x: %s, y:%s", x, y);
 
 int variable_int() {
     int x;
     int y;
 
-    x = 1;
-    y = 7;
+    x = 0;
+    y = MACRO;
     x = y + 9;
 
     return x;   // 16
@@ -29,7 +30,8 @@ int main() {
     int result;
    
     check_result("variable_int", 16, variable_int());
-    check_result("variable_int", 15, variable_int());
+
+    PRINT_MACRO(1, 2)
 
 
     printf("OK\n");

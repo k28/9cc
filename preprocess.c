@@ -66,6 +66,10 @@ void parse_macro(char *p) {
             }
             vec_push(arguments, argument);
         }
+        if (get_macro_token(vec, macropos)->ty != ')') {
+            error_at(p, "とじ括弧がありません。");
+        }
+        macropos++;
     }
 
     // 残りは置き換え対象の文字
@@ -75,6 +79,12 @@ void parse_macro(char *p) {
         vec_push(val, token);
     }
 
+    // valがない場合は, argumentsが置き換え対象"()"で定義された置き換えマクロ
+    if (val->len == 0) {
+        val = arguments;
+        arguments = NULL;
+    }
+
     Macro *macro = malloc(sizeof(Macro));
     macro->ty        = MC_DEFINE;
     macro->name      = token->input;
@@ -82,6 +92,26 @@ void parse_macro(char *p) {
     macro->val       = val;
 
     map_put(macros_, macro->name, macro);
+}
+
+// defineマクロでトークンを置き換える
+void replace_define(Token *token, int pos, Macro *macro) {
+    if (macro->ty != MC_DEFINE)
+        error_at(token->loc, "マクロの使い方が不正です。(defineマクロでありません)");
+
+    if (macro->arguments != NULL) {
+        // 関数マクロなので、tokenから引数を取得する
+        error_at(token->loc, "ごめんなさい。 関数マクロには対応できていません。");
+    }
+
+    if (macro->arguments == NULL) {
+        vec_remove(tokens, pos);
+        Vector *vals = macro->val;
+        for (int i = 0; i < vals->len; i++) {
+            Token *insert = vals->data[i];
+            vec_insert(tokens, insert, pos);
+        }
+    }
 }
 
 void preprocess() {
@@ -102,6 +132,17 @@ void preprocess() {
             // Tokenからは削除しておく
             remove_token(pos);
             continue;
+        }
+
+        if (token->ty == TK_IDENT) {
+            // macroのマップにあるかチェックする
+            Macro *macro = map_get(macros_, token->input);
+            if (macro == NULL) {
+                pos++;
+                continue;
+            }
+            // マップに定義があるので、関連するトークンを置き換える
+            replace_define(token, pos, macro);
         }
         pos++;
     }

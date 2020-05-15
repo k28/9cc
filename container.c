@@ -22,16 +22,28 @@ void vec_push(Vector *vec, void *elem) {
     vec->data[vec->len++] = elem;
 }
 
-// vecからposの物を削除する
-void vec_remove(Vector *vec, int pos) {
-    if ((vec->len - 1) < pos) {
-        fprintf(stderr, "error : index out of bounds %d", pos);
+// elemをindexの位置にいれる
+ void vec_insert(Vector *vec, void *elem, int index) {
+     if (vec->len <= index) {
+         vec_push(vec, elem);
+         return;
+     }
+
+     void *tmp = vec->data[index];
+     vec->data[index] = elem;
+     vec_insert(vec, tmp, ++index);
+}
+
+// vecからindexの物を削除する
+void vec_remove(Vector *vec, int index) {
+    if ((vec->len - 1) < index) {
+        fprintf(stderr, "error : index out of bounds %d", index);
         exit(1);
     }
 
-    // posから後ろのデータを前に詰める
+    // indexから後ろのデータを前に詰める
     int len = vec->len;
-    for (int i = pos; i < len - 1; i++) {
+    for (int i = index; i < len - 1; i++) {
         vec->data[i] = vec->data[i + 1];
     }
     vec->len -= 1;
@@ -185,6 +197,27 @@ void expect(int line, int expected, int actual) {
     exit(1);
 }
 
+void test_vector_insert() {
+
+    Vector *vec = new_vector();
+    expect(__LINE__, 0, vec->len);
+
+    for (int i = 0; i < 100; i++) {
+        int *val = malloc(sizeof(int));
+        *val = i;
+        vec_push(vec, (void *)val);
+    }
+
+    int *tmpval = malloc(sizeof(int));
+    *tmpval = 101;
+    vec_insert(vec, tmpval, 50);
+
+    expect(__LINE__, 0  , (int)*((int *)vec->data[0 ]));
+    expect(__LINE__, 101, (int)*((int *)vec->data[50]));
+    expect(__LINE__, 50,  (int)*((int *)vec->data[51]));
+    expect(__LINE__, 99 , (int)*((int *)vec->data[100]));
+}
+
 void test_vector() {
     Vector *vec = new_vector();
     expect(__LINE__, 0, vec->len);
@@ -209,6 +242,8 @@ void test_vector() {
     expect(__LINE__, 51 , (int)*((int *)vec->data[50]));
     expect(__LINE__, 52 , (int)*((int *)vec->data[51]));
     expect(__LINE__, 99 , (int)*((int *)vec->data[98]));
+
+    test_vector_insert();
 
     printf("test_vector OK\n");
 }
