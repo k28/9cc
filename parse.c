@@ -559,9 +559,9 @@ Node *for_stmt() {
     if (!consume(TK_STMT)) {
         // add
         last_assign = assign();
-        if (!consume(TK_STMT)) {
-            error_at(get_token(pos)->loc, "for文 括弧内の定義が不正です.");
-        }
+        // if (!consume(TK_STMT)) {
+        //     error_at(get_token(pos)->loc, "for文 括弧内の定義が不正です.");
+        // }
     }
 
     if (!consume(')')) {

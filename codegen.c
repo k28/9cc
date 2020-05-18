@@ -230,7 +230,7 @@ void gen(Node *node) {
             printf("  and rax, 0xFFFF\n");
         } else if (val_info->type->ty == CHAR) {
             printf("  movsx eax, BYTE PTR [rax]\n");
-            printf("  and rax, 0xFFFF\n");
+            printf("  and rax, 0x00FF\n");
         } else if (val_info->type->ty == PTR) {
             Type *pointer_type = val_info->type->ptrof;
             if (pointer_type->ty == INT) {

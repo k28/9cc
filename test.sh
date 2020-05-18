@@ -81,6 +81,7 @@ try 3   'int hoge(int a,int b,int c,int d,int e,int f){c;} int main(){hoge(1,2,3
 try 4   'int hoge(int a,int b,int c,int d,int e,int f){d;} int main(){hoge(1,2,3,4,5,6);}'
 try 5   'int hoge(int a,int b,int c,int d,int e,int f){e;} int main(){hoge(1,2,3,4,5,6);}'
 try 6   'int hoge(int a,int b,int c,int d,int e,int f){f;} int main(){hoge(1,2,3,4,5,6);}'
+
 try 2   'int main(){int a; a = 3; if(a){a = 2;} a;}'
 try 0   'int main(){int a; a = 0; if(a){a = 2;} a;}'
 try 7   'int main(){int a; a = 0; if(a){a = 2;}else{a = 7;} a;}'

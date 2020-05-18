@@ -1,6 +1,11 @@
 #!/bin/bash
 
-test_code='int main(){char *a; a = "Hello World!\n"; print_str(a); print_str("All Work and no pkay makes Jack a dull boy.\n"); return 0;}'
+test_code=' int test_111() { char x[3]; char y; x[0] = 7; x[1] = 2; y = 4; printf("x[0]:[%d] y:[%d]\n", x[0], y); int z; z = x[0] + y; return z; } int main() { return test_111(); } '
+#test_code='int main(){char x[3]; char y; x[0] = -10; x[1] = 2; y = 4; return x[0] + y;}'
+#test_code='int main(){int x[3]; int y; x[0] = -10; x[1] = 2; y = 4; return x[0] + y;}'
+#test_code='int main(){char x[3]; char y; x[0] = -1; x[1] = 2; y = 4;  return x[0] + y; }'
+#test_code='int main(){char x[3]; char y; x[0] = -1; x[1] = 2; y = 4; printf("x[0]:[%c] y:[%c]\n", x[0], y); return x[0] + y; }'
+
 #test_code='int hoge; int main(){hoge = 2; "abc"; return 0;}'
 #test_code='int main(){char *y; char x; y = &x; *y = 10; return *y;}'
 #test_code='int main(){char x; char *y; y = &x; *y = 10; return *y;}'

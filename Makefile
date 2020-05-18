@@ -10,10 +10,10 @@ $(OBJS): 9cc.h
 
 test: 9cc test/test.c
 	./9cc -test
-	./test.sh
-	#@./9cc -f test/test.c > tmp.s
-	#@gcc -static -o tmp tmp.s test-tmp.o
-	#@./tmp
+	#./test.sh
+	@./9cc -f test/test.c > tmp.s
+	@gcc -static -o tmp tmp.s test-tmp.o
+	@./tmp
 
 run: 9cc
 	./run.sh
