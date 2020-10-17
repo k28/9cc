@@ -115,6 +115,15 @@ Variable *new_variable(Type *type, int offset) {
     Variable *value = malloc(sizeof(Variable));
     value->type = type;
     value->stack_offset = offset;
+    value->initial_value_ = NULL;
+    return value;
+}
+
+Variable *new_global_variable(Type *type, int offset, void* initial_value) {
+    Variable *value = malloc(sizeof(Variable));
+    value->type = type;
+    value->stack_offset = offset;
+    value->initial_value_ = initial_value;
     return value;
 }
 

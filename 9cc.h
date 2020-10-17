@@ -119,6 +119,7 @@ typedef struct Type {
 typedef struct Variable {
     struct Type *type;
     int stack_offset;
+    void *initial_value_;  // 初期値
 } Variable;
 
 // 文字列リテラルを表す構造体
@@ -146,6 +147,7 @@ extern int pos;
 // 関数のプロトタイプ宣言
 Vector *new_vector();
 Variable *new_variable(Type *type, int offset); // container.c
+Variable *new_global_variable(Type *type, int offset, void* initial_value); // container.c
 void vec_push(Vector *vec, void *elem);
 void vec_insert(Vector *vec, void *elem, int index);
 void vec_remove(Vector *vec, int index);

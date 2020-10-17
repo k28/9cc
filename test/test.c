@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #define MACRO (7)
 
+int GROVAL_INT = 17;
 
 int variable_int() {
     int x;

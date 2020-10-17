@@ -65,7 +65,21 @@ int main(int argc, char **argv) {
         int val_size = size_of_variale(val_info);
         // printf("%s:\n", key);
         // printf("  .zero %d\n\n", val_size);
-        printf(".comm  %s, %d, %d\n", key, val_size, val_size);
+        // TODO 変数定義部分を別関数に外出しする
+        switch (val_info->type->ty) {
+            case INT:
+                {
+                    int initval = 0;
+                    if (val_info->initial_value_ != NULL) {
+                        initval = *((int *)val_info->initial_value_);
+                    }
+                    printf("%s:\n", key);
+                    printf("  .long  %d\n", *((int *)(val_info->initial_value_)));
+                    break;
+                }
+            default:
+                printf(".comm  %s, %d, %d\n", key, val_size, val_size);
+        }
     }
 
     // 文字列リテラルを定義

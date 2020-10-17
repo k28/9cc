@@ -556,7 +556,7 @@ Node *for_stmt() {
         }
     }
 
-    if (!consume(TK_STMT)) {
+    if (!consume(TK_STMT) && !consume_not_add(pos, ')')) {
         // add
         last_assign = assign();
         // if (!consume(TK_STMT)) {
@@ -857,8 +857,29 @@ void def_global_variable(int ty) {
             }
         }
 
+        Variable *val_info = NULL;
+        if (get_token(pos)->ty == TK_ASSIGN) {
+            pos++;
+            // 初期化のあるグローバル変数
+            // 単なるバイト列か関数かグローバル変数へのポインタ
+            if (get_token(pos)->ty == TK_NUM) {
+                // 数値で初期化, 数値の初期値をval_infoに持たせる
+                int *val = (int *)malloc(sizeof(int));
+                *val = get_token(pos++)->val;
+                val_info = new_global_variable(type, 0, val);
+            } else if (get_token(pos)->ty == TK_STRING) {
+                // 文字列で初期化
+               val_info = new_variable(type, 0);
+            } else if (get_token(pos)->ty == '&') {
+                // グローバル変数へのポインタ
+               val_info = new_variable(type, 0);
+            } else if (get_token(pos)->ty == TK_IDENT) {
+                // グローバル変数へのポインタ(配列)
+                error_at(get_token(pos)->loc, "この定義にはまだ対応していません。");
+            }
+        }
+
         // グローバル変数はMapに入れる
-        Variable *val_info = new_variable(type, 0);
         map_put(global_variables_, name, val_info);
     }
 

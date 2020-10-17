@@ -1,5 +1,10 @@
 
+//int GROVAL_INT = 17;
+int GROVAL_INT = 17;
+
 int main() {
+    return GROVAL_INT;
+    /*
     int x;
     int y;
 
@@ -15,7 +20,6 @@ int main() {
         return x;
     }
 
-    /*
      ブロックコメント
      int p = 12;
      hoge;
