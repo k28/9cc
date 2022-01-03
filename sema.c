@@ -72,8 +72,8 @@ void walk(Node *node) {
 }
 
 void sema() {
-    for (int i = 0; i < functions->len; i++) {
-        Function *function = (Function *)functions->data[i];
+    for (int i = 0; i < functions_->len; i++) {
+        Function *function = (Function *)functions_->data[i];
         // ローカル変数のMapをグローバル領域にコピー (値の定義はcodegen.cにある)
         variables = function->variables;
 

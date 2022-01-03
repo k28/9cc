@@ -896,7 +896,7 @@ void parse() {
                 // ( があれば関数定義
                 Function *function = def_function();
                 if (function) {
-                    vec_push(functions, function);
+                    vec_push(functions_, function);
                 }
             } else {
                 // グローバル変数
@@ -907,7 +907,7 @@ void parse() {
                 // ( があれば関数定義
                 Function *function = def_function();
                 if (function) {
-                    vec_push(functions, function);
+                    vec_push(functions_, function);
                 }
             } else {
                 // グローバル変数

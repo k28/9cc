@@ -1,7 +1,7 @@
 #include "9cc.h"
 
 Vector *tokens;
-Vector *functions;
+Vector *functions_;
 Vector *strings_;
 Map    *global_variables_;
 int label_ = 0;
@@ -37,7 +37,7 @@ int main(int argc, char **argv) {
     }
 
     // 関数定義を入れるVecotr
-    functions = new_vector();
+    functions_ = new_vector();
 
     // 文字列リテラルをいれるVector
     strings_ = new_vector();
@@ -94,8 +94,8 @@ int main(int argc, char **argv) {
 
     printf(".global main\n");
     // 抽象構文木を下りながらコード生成
-    for (int i = 0; i < functions->len; i++) {
-        Function *function = (Function *)functions->data[i];
+    for (int i = 0; i < functions_->len; i++) {
+        Function *function = (Function *)functions_->data[i];
         gen_function(function);
     }
 

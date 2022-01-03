@@ -130,7 +130,7 @@ typedef struct String {
 
 // トークナイズした結果のトークンを保持するベクター
 extern Vector *tokens;
-extern Vector *functions;           // 関数を保持するためのベクター
+extern Vector *functions_;           // 関数を保持するためのベクター
 extern Vector *strings_;            // 文字列リテラルをいれるベクター
 extern Map    *variables;           // ローカル変数の種類を保持するためのMap
 extern Map    *global_variables_;   // グローバル変数を保持するMap
