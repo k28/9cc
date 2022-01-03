@@ -111,18 +111,18 @@ Token *new_token_num(char *input, int val, char *loc) {
 
 // vectorからTokenを取得する, 取得できない時にはNULLを返す
 Token *get_token(int pos) {
-    if (tokens->len == pos) {
+    if (tokens_->len == pos) {
         fprintf(stderr, "error : index out of bounds %d", pos);
         return NULL;
     }
 
-    Token *token = (Token *) tokens->data[pos];
+    Token *token = (Token *) tokens_->data[pos];
     return token;
 }
 
 // vectorからTokenを削除する
 void remove_token(int pos) {
-    vec_remove(tokens, pos);
+    vec_remove(tokens_, pos);
 }
 
 // Nodeを作成する

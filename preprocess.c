@@ -105,11 +105,11 @@ void replace_define(Token *token, int pos, Macro *macro) {
     }
 
     if (macro->arguments == NULL) {
-        vec_remove(tokens, pos);
+        vec_remove(tokens_, pos);
         Vector *vals = macro->val;
         for (int i = 0; i < vals->len; i++) {
             Token *insert = vals->data[i];
-            vec_insert(tokens, insert, pos);
+            vec_insert(tokens_, insert, pos);
         }
     }
 }

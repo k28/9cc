@@ -1,6 +1,6 @@
 #include "9cc.h"
 
-Vector *tokens;
+Vector *tokens_;
 Vector *functions_;
 Vector *strings_;
 Map    *global_variables_;
@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
     global_variables_ = new_map();
 
     // トークナイズ
-    tokenize(source_, &tokens);
+    tokenize(source_, &tokens_);
     // プリプロセス
     preprocess();
     // 構文解析

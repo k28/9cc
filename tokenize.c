@@ -277,6 +277,6 @@ void tokenize(char *p, Vector **dest) {
     Token *token = new_token(TK_EOF, p, p);
     vec_push(vec, token);
 
-    // tokensで値を保持する
+    // tokens_で値を保持する
     *dest = vec;
 }
