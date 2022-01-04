@@ -441,7 +441,7 @@ Node *argument(int *count_of_arguments) {
 }
 
 // if文のNodeを生成
-Node *ifstmt() {
+Node *if_stmt() {
     Token *token = get_token(pos);
     if (!consume('(')) {
         error_at(get_token(pos)->loc, "if文の開き括弧がありません.");
@@ -679,7 +679,7 @@ Node *stmt() {
 
     if (consume(TK_IF)) {
         // if文
-        return ifstmt();
+        return if_stmt();
     }
 
     if (consume(TK_WHILE)) {

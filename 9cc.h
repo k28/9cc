@@ -185,7 +185,7 @@ Node *equality();
 Node *assign();
 Node *return_node();
 Node *argument(int *count_of_arguments);
-Node *ifstmt();
+Node *if_stmt();
 Node *while_stmt();
 Node *for_stmt();
 Node *def_variable(int ty);
