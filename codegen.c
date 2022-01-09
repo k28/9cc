@@ -446,7 +446,7 @@ void gen_function_variables(Function *function) {
     // Functionのargumentsに引数が入っている
     // 関数の引数はローカル変数と同じ扱いなので、値を設定しておくことで
     // 以降ローカル変数のように扱える
-    // 変数はrgpからのオフセットでアクセスする
+    // 変数はrbpからのオフセットでアクセスする
     for (int i = 0; i < function->arguments->len; i++) {
         Node *argnode = function->arguments->data[i];
         Variable *val_info = map_get(function->variables, argnode->name);

@@ -688,7 +688,7 @@ Node *stmt() {
     }
 
     if (consume(TK_FOR)) {
-        // while文
+        // for文
         return for_stmt();
     }
 
